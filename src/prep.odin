@@ -87,27 +87,27 @@ preprocess :: proc(t: string) -> (res: string) {
     return
 }
 
-// replace_word_all :: proc(s, key, value: string) -> string {
-//     if !str.contains(s, key) {
-//         return ""
-//     }
+replace_word_all :: proc(s, key, value: string) -> string {
+    if !str.contains(s, key) {
+        return ""
+    }
 
-//     new_s := s
-//     last_found := 0
-//     for str.contains(new_s[last_found:], key) {
-//         start_loc := str.index(new_s[last_found:], key)
-//         end_loc := start_loc + len(key) - 1
-//         last_found = end_loc + 1
+    new_s := s
+    last_found := 0
+    for str.contains(new_s[last_found:], key) {
+        start_loc := str.index(new_s[last_found:], key)
+        end_loc := start_loc + len(key) - 1
+        last_found = end_loc + 1
         
-//         if start_loc == 0 || is_separator(utf8.rune_at(new_s, start_loc-1)) &&
-//            end_loc == top(new_s) || is_separator(utf8.rune_at(new_s, end_loc+1)) {
+        if start_loc == 0 || is_separator(utf8.rune_at(new_s, start_loc-1)) &&
+           end_loc == top(new_s) || is_separator(utf8.rune_at(new_s, end_loc+1)) {
             
-//         }
+        }
 
 
-//     }
-//     return new_s
-// }
+    }
+    return new_s
+}
 
 in_dynarr :: proc(arr: [dynamic]string, str: string) -> bool {
     for i in arr {

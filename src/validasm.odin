@@ -105,6 +105,7 @@ native_instruction_args := map[string][]argument_kind{
     "st"    = []ak{ak.Register, ak.Register, ak.Integer},
     "stb"   = []ak{ak.Register, ak.Register, ak.Integer},
     "swp"   = []ak{ak.Register, ak.Register},
+    "mov"   = []ak{ak.Register, ak.Register},
 
     "addr"  = []ak{ak.Register, ak.Register, ak.Register},
     "addi"  = []ak{ak.Register, ak.Register, ak.Integer},
@@ -214,6 +215,7 @@ native_instruction_opcodes := map[string][]int{
     "st"    = []int{0x24, 0},
     "stb"   = []int{0x25, 0},
     "swp"   = []int{0x26, 0},
+    "mov"   = []int{0x26, 0},
 
     "addr"  = []int{0x30, 0},
     "addi"  = []int{0x31, 0},
@@ -306,6 +308,7 @@ native_instruction_args_to_fields := map[string][]iff{
     "st"    = []iff{iff.RS1, iff.RS2, iff.IMM},
     "stb"   = []iff{iff.RS1, iff.RS2, iff.IMM},
     "swp"   = []iff{iff.RS1, iff.RS2},
+    "mov"   = []iff{iff.RDE, iff.RS1},
 
     "addr"  = []iff{iff.RDE, iff.RS1, iff.RS2},
     "addi"  = []iff{iff.RDE, iff.RS1, iff.IMM},
@@ -389,6 +392,7 @@ native_instruction_formats := map[string]instruction_fmt{
     "st"    = instruction_fmt.M,
     "stb"   = instruction_fmt.M,
     "swp"   = instruction_fmt.M,
+    "mov"   = instruction_fmt.M,
 
     "addr"  = instruction_fmt.R,
     "addi"  = instruction_fmt.M,
