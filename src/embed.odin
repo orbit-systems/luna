@@ -1,4 +1,4 @@
-package mercury
+package luna
 
 // embedder
 // takes the statement chain and writes the actual binary file

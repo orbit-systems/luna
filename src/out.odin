@@ -1,4 +1,4 @@
-package mercury
+package luna
 
 import "core:os"
 import "core:fmt"
@@ -30,7 +30,7 @@ dbgokay :: proc(s: ..string) {
 }
 
 print_help :: proc() {
-    fmt.print("\nusage: mercury (path) [flags]\n")
+    fmt.print("\nusage: luna (path) [flags]\n")
     fmt.print("\n-debug               print debug info")
     fmt.print("\n-out:[path]          set output path")
     fmt.print("\n-no-color            disable output coloring")

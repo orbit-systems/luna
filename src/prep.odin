@@ -1,4 +1,4 @@
-package mercury
+package luna
 
 import "core:os"
 import str "core:strings"

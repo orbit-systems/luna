@@ -1,7 +1,7 @@
 all: build
 
 BUILD_INPATH = ./src
-BUILD_FLAGS = -o:speed -out:./bin/mercury
+BUILD_FLAGS = -o:speed -out:./bin/luna
 
 STRESSTEST_INPATH = ./test/twomil.aphel
 TEST_INPATH = ./test/test.aphel
@@ -11,7 +11,7 @@ build:
 	@odin build $(BUILD_INPATH) $(BUILD_FLAGS)
 
 test: build
-	@./bin/mercury $(TEST_INPATH) $(TEST_FLAGS)
+	@./bin/luna $(TEST_INPATH) $(TEST_FLAGS)
 
 stresstest: build
-	@./bin/mercury $(STRESSTEST_INPATH) $(TEST_FLAGS)
+	@./bin/luna $(STRESSTEST_INPATH) $(TEST_FLAGS)

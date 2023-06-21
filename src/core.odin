@@ -1,11 +1,11 @@
-package mercury
+package luna
 
-// ╭──────────────╮
-// │ mercury v0.3 │ by sandwichman
-// ╰──────────────╯
-// Mercury - the Aphelion ISA assembler
+// ╭───────────╮
+// │ luna v0.3 │ by sandwichman
+// ╰───────────╯
+// luna - the Aphelion ISA assembler
 
-// usage: mercury (path) [flags]
+// usage: luna (path) [flags]
  
 // -debug               print debug info
 // -out:[path]          set output path
