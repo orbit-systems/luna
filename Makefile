@@ -15,3 +15,5 @@ test: build
 
 stresstest: build
 	@./bin/luna $(STRESSTEST_INPATH) $(TEST_FLAGS)
+
+	T:\vscode\comet\test\fibonacci.aphel

@@ -1,9 +1,9 @@
 package luna
 
-// ╭───────────╮
-// │ luna v0.3 │ by sandwichman
-// ╰───────────╯
-// luna - the Aphelion ISA assembler
+// ╭──────╮
+// │ luna │ the Aphelion ISA assembler
+// ╰──────╯
+// by spsandwichman
 
 // usage: luna (path) [flags]
  
