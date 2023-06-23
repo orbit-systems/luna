@@ -1,7 +1,7 @@
 all: build
 
 BUILD_INPATH = ./src
-BUILD_FLAGS = -o:speed -out:./bin/luna
+BUILD_FLAGS = -o:speed -out:./bin/luna.exe
 
 STRESSTEST_INPATH = ./test/twomil.aphel
 TEST_INPATH = ./test/test.aphel
@@ -15,5 +15,3 @@ test: build
 
 stresstest: build
 	@./bin/luna $(STRESSTEST_INPATH) $(TEST_FLAGS)
-
-	T:\vscode\comet\test\fibonacci.aphel
