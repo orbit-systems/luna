@@ -215,7 +215,7 @@ native_instruction_opcodes := map[string][]int{
     "st"    = []int{0x24, 0},
     "stb"   = []int{0x25, 0},
     "swp"   = []int{0x26, 0},
-    "mov"   = []int{0x26, 0},
+    "mov"   = []int{0x27, 0},
 
     "addr"  = []int{0x30, 0},
     "addi"  = []int{0x31, 0},
