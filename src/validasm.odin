@@ -305,9 +305,9 @@ native_instruction_args_to_fields := map[string][]iff{
     "ld"    = []iff{iff.RDE, iff.RS1, iff.IMM},
     "lbs"   = []iff{iff.RDE, iff.RS1, iff.IMM},
     "lb"    = []iff{iff.RDE, iff.RS1, iff.IMM},
-    "st"    = []iff{iff.RS1, iff.RS2, iff.IMM},
-    "stb"   = []iff{iff.RS1, iff.RS2, iff.IMM},
-    "swp"   = []iff{iff.RS1, iff.RS2},
+    "st"    = []iff{iff.RDE, iff.RS1, iff.IMM},
+    "stb"   = []iff{iff.RDE, iff.RS1, iff.IMM},
+    "swp"   = []iff{iff.RDE, iff.RS1},
     "mov"   = []iff{iff.RDE, iff.RS1},
 
     "addr"  = []iff{iff.RDE, iff.RS1, iff.RS2},

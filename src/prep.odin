@@ -13,37 +13,38 @@ preprocess :: proc(t: string) -> (res: string) {
     res = str.expand_tabs(t, 4)
 
     // .def
-    {
-        defined := make([dynamic]string)
-        defer delete(defined)
-        for str.contains(res, ".def") {
-            for l, index in str.split_lines(res) {
-                if !str.contains(l, ".def") {
-                    continue
-                }
+    // * will be handled as part of the lexer
+    // {
+    //     defined := make([dynamic]string)
+    //     defer delete(defined)
+    //     for str.contains(res, ".def") {
+    //         for l, index in str.split_lines(res) {
+    //             if !str.contains(l, ".def") {
+    //                 continue
+    //             }
 
-                line_tokens : [dynamic]btoken
-                tokenize(l, &line_tokens) // lmfao invoking the lexer on a single line actually works pretty well
+    //             line_tokens : [dynamic]btoken
+    //             tokenize(l, &line_tokens) // lmfao invoking the lexer on a single line actually works pretty well
 
-                if line_tokens[0].value != ".def" || len(line_tokens) != 3 {
-                    continue
-                }
+    //             if line_tokens[0].value != ".def" || len(line_tokens) != 3 {
+    //                 continue
+    //             }
 
-                if in_dynarr(defined, line_tokens[1].value) {
-                    die("ERR [line %d]: already defined \"%s\"\n", index, line_tokens[1].value)
-                }
+    //             if in_dynarr(defined, line_tokens[1].value) {
+    //                 die("ERR [line %d]: already defined \"%s\"\n", index, line_tokens[1].value)
+    //             }
 
-                append(&defined, line_tokens[1].value)
+    //             append(&defined, line_tokens[1].value)
 
                 
-                line_removed, _ := str.remove(res, l, 1)
-                definitions_inserted, _ := str.replace_all(line_removed, line_tokens[1].value, line_tokens[2].value)
-                res = definitions_inserted
-                break   // restart definition search
+    //             line_removed, _ := str.remove(res, l, 1)
+    //             definitions_inserted, _ := str.replace_all(line_removed, line_tokens[1].value, line_tokens[2].value)
+    //             res = definitions_inserted
+    //             break   // restart definition search
                 
-            }
-        }
-    }
+    //         }
+    //     }
+    // }
 
     // .inc
     {
@@ -87,27 +88,27 @@ preprocess :: proc(t: string) -> (res: string) {
     return
 }
 
-replace_word_all :: proc(s, key, value: string) -> string {
-    if !str.contains(s, key) {
-        return ""
-    }
+// replace_word_all :: proc(s, key, value: string) -> string {
+//     if !str.contains(s, key) {
+//         return ""
+//     }
 
-    new_s := s
-    last_found := 0
-    for str.contains(new_s[last_found:], key) {
-        start_loc := str.index(new_s[last_found:], key)
-        end_loc := start_loc + len(key) - 1
-        last_found = end_loc + 1
+//     new_s := s
+//     last_found := 0
+//     for str.contains(new_s[last_found:], key) {
+//         start_loc := str.index(new_s[last_found:], key)
+//         end_loc := start_loc + len(key) - 1
+//         last_found = end_loc + 1
         
-        if start_loc == 0 || is_separator(utf8.rune_at(new_s, start_loc-1)) &&
-           end_loc == top(new_s) || is_separator(utf8.rune_at(new_s, end_loc+1)) {
+//         if start_loc == 0 || is_separator(utf8.rune_at(new_s, start_loc-1)) &&
+//            end_loc == top(new_s) || is_separator(utf8.rune_at(new_s, end_loc+1)) {
             
-        }
+//         }
 
 
-    }
-    return new_s
-}
+//     }
+//     return new_s
+// }
 
 in_dynarr :: proc(arr: [dynamic]string, str: string) -> bool {
     for i in arr {
