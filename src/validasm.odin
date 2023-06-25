@@ -345,7 +345,7 @@ native_instruction_args_to_fields := map[string][]iff{
     "pop"   = []iff{iff.RDE},
     "enter" = []iff{},
     "leave" = []iff{},
-    "reloc" = []iff{iff.RS1, iff.IMM},
+    "reloc" = []iff{iff.RDE, iff.IMM},
 
     "ljal"  = []iff{iff.RS1, iff.IMM},
     "ljalr" = []iff{iff.RS1, iff.IMM, iff.RDE},
