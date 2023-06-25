@@ -153,6 +153,10 @@ btoken :: struct {
     value   : string,
 }
 
+delete_btoken :: proc(t: btoken) {
+    delete(t.value)
+}
+
 btoken_kind :: enum {
     Newline,
     Directive,

@@ -93,14 +93,17 @@ make_bin :: proc(stmt_chain: ^[dynamic]statement, imglen: int) -> []u8 {
                     bin[stmt.loc + i] = val_byte
                 }
             case "string":
-                str_u8 := transmute([]u8) stmt.args[0].value_str
-                for b, index in str_u8 {
-                    bin[stmt.loc + index] = b
+                str := stmt.args[0].value_str
+                for _, index in str {
+                    bin[stmt.loc + index] = str[index]
                 }
             case "bin":
-                bin, ok := os.read_entire_file(stmt.args[0].value_str)
-                for b, index in bin {
-                    bin[stmt.loc + index] = b
+                file, ok := os.read_entire_file(stmt.args[0].value_str)
+                if !ok {
+                    die("ERR [line %d]: cannot open file \"%s\"", stmt.line, stmt.args[0].value_str)
+                }
+                for _, index in file {
+                    bin[stmt.loc + index] = file[index]
                 }
             case "loc", "skip", "align":
                 // ignore
