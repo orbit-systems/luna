@@ -6,44 +6,12 @@ import "core:unicode/utf8"
 
 // preprocessor
 // takes the raw assembly and expands .inc, .def, and .mac
+// JANK-ASS SHIT
 
 preprocess :: proc(t: string) -> (res: string) {
 
     // expand tabs
     res = str.expand_tabs(t, 4)
-
-    // .def
-    // {
-    //     defined := make([dynamic]string)
-    //     defer delete(defined)
-    //     for str.contains(res, ".def") {
-    //         for l, index in str.split_lines(res) {
-    //             if !str.contains(l, ".def") {
-    //                 continue
-    //             }
-
-    //             line_tokens : [dynamic]btoken
-    //             tokenize(l, &line_tokens) // lmfao invoking the lexer on a single line actually works pretty well
-
-    //             if line_tokens[0].value != ".def" || len(line_tokens) != 3 {
-    //                 continue
-    //             }
-
-    //             if in_dynarr(defined, line_tokens[1].value) {
-    //                 die("ERR [line %d]: already defined \"%s\"\n", index, line_tokens[1].value)
-    //             }
-
-    //             append(&defined, line_tokens[1].value)
-
-                
-    //             line_removed, _ := str.remove(res, l, 1)
-    //             definitions_inserted, _ := str.replace_all(line_removed, line_tokens[1].value, line_tokens[2].value)
-    //             res = definitions_inserted
-    //             break   // restart definition search
-                
-    //         }
-    //     }
-    // }
 
     // .inc
     {
@@ -82,19 +50,86 @@ preprocess :: proc(t: string) -> (res: string) {
             }
         }
     }
-    
+
+    // .def
+    {
+        defined := make([dynamic]string)
+        defer delete(defined)
+        for str.contains(res, ".def") {
+            for l, index in str.split_lines(res) {
+                if !str.contains(l, ".def") {
+                    continue
+                }
+
+                line_tokens : [dynamic]btoken
+                tokenize(l, &line_tokens) // lmfao invoking the lexer on a single line actually works pretty well
+
+                if line_tokens[0].value != ".def" || len(line_tokens) != 3 {
+                    continue
+                }
+
+                if in_dynarr(defined, line_tokens[1].value) {
+                    die("ERR [line %d]: already defined \"%s\"\n", index, line_tokens[1].value)
+                }
+
+                append(&defined, line_tokens[1].value)
+
+                line_removed, _ := str.remove(res, l, 1)
+                res = replace_word_all(line_removed, line_tokens[1].value, line_tokens[2].value)
+                delete(line_removed)
+                delete(line_tokens)
+                break   // restart definition search
+            }
+        }
+    }
+
+    //.mac
+    {
+        macros_defined := make([dynamic]macro)
+        defer delete_macro_dynarr(macros_defined)
+    }
 
     return
 }
 
-// jank ass shit - replace as soon as possible
+// jank ass shit - not actually too jank!!
 replace_word_all :: proc(s, key, value: string) -> string {
     if !str.contains(s, key) {
         return ""
     }
 
-    return ""
+    cursor := 0
+    new_s := ""
+    for str.contains(s[cursor:], key) {
+        idx := str.index(s[cursor:], key) + cursor
+        new_s = str.concatenate({new_s, s[cursor:idx]})
+        if surrounded_by_seps(s, key, idx) {
+            new_s = str.concatenate({new_s, value})
+            cursor = idx + len(value)
+        } else {
+            new_s = str.concatenate({new_s, key})
+            cursor = idx + len(key)
+        }
+    }
+    new_s = str.concatenate({new_s, s[cursor:]})
+
+    return new_s
 }
+
+surrounded_by_seps :: proc(s, key: string, index: int) -> bool {
+    return (index == 0          || is_prep_separator(utf8.rune_at(s, index-1))) && 
+           (index == len(key)-1 || is_prep_separator(utf8.rune_at(s, index+len(key))))
+}
+
+is_prep_separator :: proc(c: rune) -> bool {
+    for r in prep_separators {
+        if r == c do return true
+    }
+    return false
+}
+
+prep_separators :: [?]rune{' ', '\t', '\r', '\v', '\f', ',', '\n'}
+
 
 in_dynarr :: proc(arr: [dynamic]string, str: string) -> bool {
     for i in arr {
@@ -110,4 +145,17 @@ macro :: struct {
     name        : string,
     arguments   : [dynamic]string,
     body        : string,
+}
+
+delete_macro_dynarr :: proc(m: [dynamic]macro) {
+    for _, i in m {
+        delete_macro(m[i])
+    }
+    delete(m)
+}
+
+delete_macro :: proc(m: macro) {
+    delete(m.name)
+    delete(m.arguments)
+    delete(m.body)
 }

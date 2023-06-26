@@ -138,6 +138,9 @@ main :: proc() {
     dbg(" (%d tokens indexed)\n", len(token_chain))
     set_style(ANSI.Reset)
 
+    delete(raw_asm)
+    delete(raw)
+
     // debug display token chain
     display_more := flag_prep_only && flag_print_dbg
     if display_more {
