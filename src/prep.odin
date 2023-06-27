@@ -105,10 +105,10 @@ replace_word_all :: proc(s, key, value: string) -> string {
         new_s = str.concatenate({new_s, s[cursor:idx]})
         if surrounded_by_seps(s, key, idx) {
             new_s = str.concatenate({new_s, value})
-            cursor = idx + len(value)
+            cursor = idx + len(value) - 2 // some shit about slice ranges
         } else {
             new_s = str.concatenate({new_s, key})
-            cursor = idx + len(key)
+            cursor = idx + len(key) - 2 
         }
     }
     new_s = str.concatenate({new_s, s[cursor:]})
