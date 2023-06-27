@@ -12,24 +12,24 @@ precode :: proc(stmt_chain: ^[dynamic]statement) {
             continue
         }
 
-        if !(stmt.name in native_instruction_args_to_fields) {
+        if !(stmt.name in native_instructions) {
             die("ERR [line %d]: cannot retrieve instruction embedding information for \"%s\"", stmt.line, stmt.name)
         }
 
-        args_to_fields := native_instruction_args_to_fields[stmt.name]
+        args_to_fields := native_instructions[stmt.name].fields
         for arg, arg_index in args_to_fields {
             switch arg {
-            case iff.RDE: stmt_chain^[stmt_index].rde = stmt.args[arg_index].value_int
-            case iff.RS1: stmt_chain^[stmt_index].rs1 = stmt.args[arg_index].value_int
-            case iff.RS2: stmt_chain^[stmt_index].rs2 = stmt.args[arg_index].value_int
-            case iff.IMM: stmt_chain^[stmt_index].imm = stmt.args[arg_index].value_int
+            case iff.RDE: stmt_chain^[stmt_index].rde = cast(u8) stmt.args[arg_index].value_int
+            case iff.RS1: stmt_chain^[stmt_index].rs1 = cast(u8) stmt.args[arg_index].value_int
+            case iff.RS2: stmt_chain^[stmt_index].rs2 = cast(u8) stmt.args[arg_index].value_int
+            case iff.IMM: stmt_chain^[stmt_index].imm =          stmt.args[arg_index].value_int
             }
         }
     }
 }
 
 // write to binary
-make_bin :: proc(stmt_chain: ^[dynamic]statement, imglen: int) -> []u8 {
+make_bin :: proc(stmt_chain: ^[dynamic]statement, imglen: u64) -> []u8 {
 
     precode(stmt_chain)
 
@@ -89,13 +89,13 @@ make_bin :: proc(stmt_chain: ^[dynamic]statement, imglen: int) -> []u8 {
             case "byte":
                 val_byte := cast(u8) val
                 count := stmt.args[1].value_int
-                for i := 0 ; i < count ; i+=1 {
+                for i : u64 = 0 ; i < count ; i+=1 {
                     bin[stmt.loc + i] = val_byte
                 }
             case "string":
                 str := stmt.args[0].value_str
                 for _, index in str {
-                    bin[stmt.loc + index] = str[index]
+                    bin[stmt.loc + u64(index)] = str[index]
                 }
             case "bin":
                 file, ok := os.read_entire_file(stmt.args[0].value_str)
@@ -103,7 +103,7 @@ make_bin :: proc(stmt_chain: ^[dynamic]statement, imglen: int) -> []u8 {
                     die("ERR [line %d]: cannot open file \"%s\"", stmt.line, stmt.args[0].value_str)
                 }
                 for _, index in file {
-                    bin[stmt.loc + index] = file[index]
+                    bin[stmt.loc + u64(index)] = file[index]
                 }
             case "loc", "skip", "align":
                 // ignore
@@ -113,10 +113,10 @@ make_bin :: proc(stmt_chain: ^[dynamic]statement, imglen: int) -> []u8 {
 
         case statement_kind.Instruction:
 
-            if !(stmt.name in native_instruction_formats) {
+            if !(stmt.name in native_instructions) {
                 die("ERR [line %d]: cannot retrieve instruction format for \"%s\"", stmt.line, stmt.name)
             }
-            format := native_instruction_formats[stmt.name]
+            format := native_instructions[stmt.name].format
 
             ins : u32
 
@@ -141,53 +141,53 @@ make_bin :: proc(stmt_chain: ^[dynamic]statement, imglen: int) -> []u8 {
     return bin
 }
 
-write_u32_le :: proc(buf: ^[]u8, loc: int, val: u32) {
+write_u32_le :: proc(buf: ^[]u8, loc: u64, val: u32) {
     buf^[loc]   = cast(u8) (val)
     buf^[loc+1] = cast(u8) (val >> 8)
     buf^[loc+2] = cast(u8) (val >> 16)
     buf^[loc+3] = cast(u8) (val >> 24)
 }
 
-encode_r :: proc(r1, r2, r3, imm, op: int) -> (bin: u32) {
-    bin = bin | cast(u32) op            // embed opcode
-    bin = bin | cast(u32) (imm << 8)    // embed imm
-    bin = bin & cast(u32) 0xF_FFFF      // limit imm (ran into problems where the immediate value would overwrite everything that comes after it if it was negative)
-    bin = bin | cast(u32) (r3 << 20)    // embed r3
-    bin = bin | cast(u32) (r2 << 24)    // embed r2
-    bin = bin | cast(u32) (r1 << 28)    // embed r1
+encode_r :: proc(r1, r2, r3: u8, imm: u64, op: u8) -> (bin: u32) {
+    bin = bin |  cast(u32) op           // embed opcode
+    bin = bin | (cast(u32) imm << 8)    // embed imm
+    bin = bin &  cast(u32) 0xF_FFFF     // limit imm (ran into problems where the immediate value would overwrite everything that comes after it if it was negative)
+    bin = bin | (cast(u32) r3 << 20)    // embed r3
+    bin = bin | (cast(u32) r2 << 24)    // embed r2
+    bin = bin | (cast(u32) r1 << 28)    // embed r1
     return
 }
 
-encode_m :: proc(r1, r2, imm, op: int) -> (bin: u32) {
-    bin = bin | cast(u32) op            // embed opcode
-    bin = bin | cast(u32) (imm << 8)    // embed imm
-    bin = bin & cast(u32) 0xFF_FFFF     // limit imm
-    bin = bin | cast(u32) (r2 << 24)    // embed r2
-    bin = bin | cast(u32) (r1 << 28)    // embed r1
+encode_m :: proc(r1, r2: u8, imm: u64, op: u8) -> (bin: u32) {
+    bin = bin |  cast(u32) op           // embed opcode
+    bin = bin | (cast(u32) imm << 8)    // embed imm
+    bin = bin &  cast(u32) 0xFF_FFFF    // limit imm
+    bin = bin | (cast(u32) r2 << 24)    // embed r2
+    bin = bin | (cast(u32) r1 << 28)    // embed r1
     return
 }
 
-encode_f :: proc(r1, func, imm, op: int) -> (bin: u32) {
-    bin = bin | cast(u32) op            // embed opcode
-    bin = bin | cast(u32) (imm << 8)    // embed imm
-    bin = bin & cast(u32) 0xFF_FFFF     // limit imm
-    bin = bin | cast(u32) (func << 24)  // embed func
-    bin = bin | cast(u32) (r1 << 28)    // embed r1
+encode_f :: proc(r1, func: u8, imm:u64, op: u8) -> (bin: u32) {
+    bin = bin |  cast(u32) op           // embed opcode
+    bin = bin | (cast(u32) imm << 8)    // embed imm
+    bin = bin &  cast(u32) 0xFF_FFFF    // limit imm
+    bin = bin | (cast(u32) func << 24)  // embed func
+    bin = bin | (cast(u32) r1 << 28)    // embed r1
     return
 }
 
-encode_j :: proc(r1, imm, op: int) -> (bin: u32) {
-    bin = bin | cast(u32) op            // embed opcode
-    bin = bin | cast(u32) (imm << 8)    // embed imm
-    bin = bin & cast(u32) 0xFFF_FFFF    // limit imm
-    bin = bin | cast(u32) (r1 << 28)    // embed r1
+encode_j :: proc(r1:u8, imm:u64, op: u8) -> (bin: u32) {
+    bin = bin |  cast(u32) op           // embed opcode
+    bin = bin | (cast(u32) imm << 8)    // embed imm
+    bin = bin &  cast(u32) 0xFFF_FFFF   // limit imm
+    bin = bin | (cast(u32) r1 << 28)    // embed r1
     return
 }
 
-encode_b :: proc(func, imm, op: int) -> (bin: u32) {
-    bin = bin | cast(u32) op            // embed opcode
-    bin = bin | cast(u32) (imm << 8)    // embed imm
-    bin = bin & cast(u32) 0xFFF_FFFF    // limit imm
-    bin = bin | cast(u32) (func << 28)  // embed r1
+encode_b :: proc(func:u8, imm:u64, op: u8) -> (bin: u32) {
+    bin = bin |  cast(u32) op           // embed opcode
+    bin = bin | (cast(u32) imm << 8)    // embed imm
+    bin = bin &  cast(u32) 0xFFF_FFFF   // limit imm
+    bin = bin | (cast(u32) func << 28)  // embed r1
     return
 }
