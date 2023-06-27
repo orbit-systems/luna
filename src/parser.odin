@@ -12,7 +12,7 @@ import "core:strconv"
 
 construct_stmt_chain :: proc(stmt_chain: ^[dynamic]statement, tokens: ^[dynamic]btoken) {
     // construct chain
-    line := 1
+    line : u64 = 1
     for tok in tokens^ {
         switch tok.kind {
         case btoken_kind.Newline:
@@ -56,7 +56,7 @@ construct_stmt_chain :: proc(stmt_chain: ^[dynamic]statement, tokens: ^[dynamic]
 
             new := argument{
                 argument_kind.Register,
-                registers[strings.to_lower(tok.value)],
+                u64(registers[strings.to_lower(tok.value)]),
                 strings.to_lower(tok.value), // normalize
             }
 
@@ -84,11 +84,11 @@ construct_stmt_chain :: proc(stmt_chain: ^[dynamic]statement, tokens: ^[dynamic]
 
             // recognize integer literal
             // thank god for strconv, this section was like 100 lines long before i rembered it existed 0.0
-            decoded, ok := strconv.parse_int(tok.value)
+            decoded, ok := strconv.parse_i64(tok.value)
             if ok {
                 new := argument{
                     kind = argument_kind.Integer,
-                    value_int = decoded,
+                    value_int = u64(decoded),
                 }
                 append(&(stmt_chain^[top(stmt_chain)].args), new)
                 // add_arg_to_statement(&(stmt_chain^[top(stmt_chain)]), new)
@@ -128,7 +128,7 @@ check_stmt_chain :: proc(stmt_chain: ^[dynamic]statement) {
                 die("ERR [line %d]: invalid directive \"%s\"", st.line, st.name)
             }
 
-            ref_args := native_directive_args[st.name]
+            ref_args := native_directives[st.name]
 
             if len(ref_args) != len(args) {
                 die("ERR [line %d]: invalid arguments for \".%s\" - expected %v, got %v", st.line, st.name, ref_args, args)
@@ -147,7 +147,7 @@ check_stmt_chain :: proc(stmt_chain: ^[dynamic]statement) {
             if st.name in instruction_aliases{
                 real_names := instruction_aliases[st.name]
                 for n in real_names{
-                    ref_args := native_instruction_args[n]
+                    ref_args := native_instructions[n].args
                     match := true
                     for i := 0; i < len(ref_args); i += 1 {
                         if ref_args[i] != args[i] {
@@ -168,10 +168,10 @@ check_stmt_chain :: proc(stmt_chain: ^[dynamic]statement) {
             }
 
             stmt_chain^[index].name   = name
-            stmt_chain^[index].opcode = native_instruction_opcodes[name][0]
-            stmt_chain^[index].func   = native_instruction_opcodes[name][1]
+            stmt_chain^[index].opcode = native_instructions[name].opcode
+            stmt_chain^[index].func   = native_instructions[name].func
 
-            ref_args := native_instruction_args[name]
+            ref_args := native_instructions[name].args
 
             if len(ref_args) != len(args) {
                 die("ERR [line %d]: invalid arguments for \"%s\" - expected %v, got %v", st.line, st.name, ref_args, args)
@@ -194,11 +194,11 @@ check_stmt_chain :: proc(stmt_chain: ^[dynamic]statement) {
     }
 }
 
-trace :: proc(stmt_chain: ^[dynamic]statement) -> int {
+trace :: proc(stmt_chain: ^[dynamic]statement) -> u64 {
     
     // trace statement chain, fill in LOC and SIZE values - optimize / clean up later
-    img_pointer := 0
-    img_size := 0
+    img_pointer : u64 = 0
+    img_size : u64 = 0
     for st, index in stmt_chain^ {
         switch st.kind {
         case statement_kind.Unresolved:
@@ -234,7 +234,7 @@ trace :: proc(stmt_chain: ^[dynamic]statement) -> int {
                 stmt_chain^[index].size = st.args[1].value_int
             case "string":
                 stmt_chain^[index].loc = img_pointer
-                stmt_chain^[index].size = len(st.args[0].value_str) //byte length of string should be the correct size because it has been unescaped
+                stmt_chain^[index].size = cast(u64) len(st.args[0].value_str) //byte length of string should be the correct size because it has been unescaped
             case "val":
                 stmt_chain^[index].loc = img_pointer
                 stmt_chain^[index].size = 8     // 64 bits
@@ -244,7 +244,7 @@ trace :: proc(stmt_chain: ^[dynamic]statement) -> int {
                 if !os.exists(st.args[0].value_str) {
                     die("ERR [line %d]: cannot find file at \"%s\"", st.line, st.args[0].value_str)
                 }
-                stmt_chain^[index].size = cast(int) length
+                stmt_chain^[index].size = cast(u64) length
 
             // sectioning
             case "loc":
@@ -272,7 +272,7 @@ trace :: proc(stmt_chain: ^[dynamic]statement) -> int {
 resolve_labels :: proc(stmt_chain: ^[dynamic]statement) -> (labels, refs: int) {
     
     // build symbol table
-    symbol_table := make(map[string]int)
+    symbol_table := make(map[string]u64)
     defer delete(symbol_table)
     for st in stmt_chain^ {
         if st.kind != statement_kind.Label {
@@ -305,7 +305,7 @@ resolve_labels :: proc(stmt_chain: ^[dynamic]statement) -> (labels, refs: int) {
             if !ok {
                 die("ERR [line %d]: symbol not declared \"%s\"", st.line, st.args[0].value_str)
             }
-            diff := addr - st.loc
+            diff := i64(addr - st.loc)
             // check if in 20-bit range: label is too far if not
             if (diff / 4) < -524_288 || (diff / 4) > 524_287 {
                 die("ERR [line %d]: label \"%s\" is too far (%d bytes offset), cannot branch", st.line, st.args[0].value_str, diff)
@@ -315,7 +315,7 @@ resolve_labels :: proc(stmt_chain: ^[dynamic]statement) -> (labels, refs: int) {
                 die("ERR [line %d]: label \"%s\" and current instruction are not 4-byte aligned, cannot branch", st.line, st.args[0].value_str)
             }
             refs += 1
-            st.args[0].value_int = diff / 4
+            st.args[0].value_int = u64(diff / 4)
         }
 
     }
@@ -351,22 +351,22 @@ statement :: struct {
     kind        : statement_kind,   // what kind of statement it is
     name        : string,           // name without formatting
     args        : [dynamic]argument,// arguments
-    line        : int,              // line number for error display
+    line        : u64,              // line number for error display
 
-    opcode      : int,              // opcode
-    func        : int,              // func
-    rde         : int,              // r1 for instruction encoding
-    rs1         : int,              // r2 for instruction encoding
-    rs2         : int,              // r3 for instruction encoding
-    imm         : int,              // imm for instruction encoding
+    opcode      : u8,               // opcode
+    func        : u8,               // func
+    rde         : u8,               // r1 for instruction encoding
+    rs1         : u8,               // r2 for instruction encoding
+    rs2         : u8,               // r3 for instruction encoding
+    imm         : u64,               // imm for instruction encoding
 
-    loc         : int,              // location in image
-    size        : int,              // size of statement in bytes
+    loc         : u64,              // location in image
+    size        : u64,              // size of statement in bytes
 }
 
 argument :: struct {
     kind        : argument_kind,    // what kind of argument it is
-    value_int   : int,              // int value, if applicable
+    value_int   : u64,              // int value, if applicable
     value_str   : string,           // string value, if applicable
 }
 
