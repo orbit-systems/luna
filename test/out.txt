@@ -5,9 +5,12 @@ main:
     reloc   ra, 0       // place stack at 0xFFFF
     llis    ra, 0
 
-    li      ra, 0x0123_4567_89AB_CDEF
-    test    ra, rb
-    test    ra, 1
+lli  ra 0xcdef // li
+lui  ra 0x89ab
+lti  ra 0x4567
+ltui ra 0x0123
+add rz ra rb
+add rz ra 1
 
 loop:
     add     ra, ra, 1

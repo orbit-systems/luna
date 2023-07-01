@@ -22,7 +22,7 @@ tokenize :: proc(asm_string: string, token_chain: ^[dynamic]btoken) {
     // index tokens
     for char, index in asm_string {
 
-        char_str := utf8.runes_to_string([]rune{char})
+        char_str := utf8.runes_to_string({char})
         
         // handle comments
         if continue_next > 0 {

@@ -2,7 +2,9 @@ package luna
 
 import "core:os"
 import str "core:strings"
+import "core:fmt"
 import "core:unicode/utf8"
+import "core:strconv"
 
 // preprocessor
 // takes the raw assembly and expands .inc, .def, and .mac
@@ -17,7 +19,7 @@ preprocess :: proc(t: string) -> (res: string) {
     {
         included := make([dynamic]string)
         defer delete(included)
-        for str.contains(res, ".inc") {
+        //for str.contains(res, ".inc") {
             for l, index in str.split_lines(res) {
                 if !str.contains(l, ".inc") {
                     continue
@@ -26,7 +28,7 @@ preprocess :: proc(t: string) -> (res: string) {
                 line_tokens : [dynamic]btoken
                 tokenize(l, &line_tokens) // lmfao invoking the lexer on a single line actually works pretty well
 
-                if line_tokens[0].value != ".inc" || len(line_tokens) != 2 {
+                if  len(line_tokens) != 2 || line_tokens[0].value != ".inc" {
                     continue
                 }
 
@@ -41,14 +43,14 @@ preprocess :: proc(t: string) -> (res: string) {
                     r, _ := str.replace(res, l, transmute(string) inc_file, 1)
                     res = r
                     append(&included, inc_path)
-                    break
+                  //  break
                 } else {
                     r, _ := str.remove(res, l, 1)
                     res = r
-                    break
+                   // break
                 }
             }
-        }
+        //}
     }
 
     // .def
@@ -87,6 +89,48 @@ preprocess :: proc(t: string) -> (res: string) {
     {
         macros_defined := make([dynamic]macro)
         defer delete_macro_dynarr(macros_defined)
+    }
+
+    // pseudo-instructions
+    {
+        for l, index in str.split_lines(res) {
+            if !str.contains(l, "test") && !str.contains(l, "li") {
+                continue
+            }
+
+            line_tokens : [dynamic]btoken
+            tokenize(l, &line_tokens) // lmfao invoking the lexer on a single line actually works pretty well
+
+            if len(line_tokens) == 3 && line_tokens[0].value == "test" {
+                expansion := fmt.aprintf("add rz %s %s", line_tokens[1].value, line_tokens[2].value)
+
+                res, _ = str.replace_all(res, l, expansion)
+                delete(expansion)
+            } else if len(line_tokens) == 3 && line_tokens[0].value == "li" {
+                imm, ok := strconv.parse_i64(line_tokens[2].value)
+                if !ok {
+                    die("ERR [line %d]: cannot parse int \"%s\"", index, line_tokens[2].value)
+                }
+
+                immu := u64(imm)
+
+                // optimize this with sign extend shit
+                expansion := fmt.aprintf(
+                    "llis %s 0x%4x // li\n" +
+                    "lui  %s 0x%4x\n" +
+                    "lti  %s 0x%4x\n" +
+                    "ltui %s 0x%4x", 
+                    line_tokens[1].value, (immu & 0x0000_0000_0000_FFFF) >> 0,
+                    line_tokens[1].value, (immu & 0x0000_0000_FFFF_0000) >> 16,
+                    line_tokens[1].value, (immu & 0x0000_FFFF_0000_0000) >> 32,
+                    line_tokens[1].value, (immu & 0xFFFF_0000_0000_0000) >> 48)
+                
+                res, _ = str.replace_all(res, l, expansion)
+                delete(expansion)
+            }
+
+            delete(line_tokens)
+        }
     }
 
     return
