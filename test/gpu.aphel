@@ -33,7 +33,7 @@ GPU_set_cursor_color: // RGB vals in ra, rb, rc respectively
     shl     rk, rk, 8
     lli     rk, 0x04
 
-    st      rk, rz, 0x810   // send to gpu
+    sw      rk, rz, 0x810   // send to gpu
 
     pop     rk
     ret
