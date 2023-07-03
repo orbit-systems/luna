@@ -5,15 +5,7 @@ package luna
 // ╰──────╯
 // by spsandwichman
 
-// usage: luna (path) [flags]
- 
-// -debug               print debug info
-// -out:[path]          set output path
-// -no-color            disable output coloring
-// -prep                only invoke preprocessor - expand macros, etc.
-// -ignore-ext          ignore file extension
-// -keep-dupl-inc       do not filter duplicate file includes
-// -help                display this text
+// using aphelion v0.2.1
 
 // todo test    : lexer, parser, embedder
 // todo finish  : 
