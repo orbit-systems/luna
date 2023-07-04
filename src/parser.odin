@@ -95,6 +95,15 @@ construct_stmt_chain :: proc(stmt_chain: ^[dynamic]statement, tokens: ^[dynamic]
                 continue
             }
 
+            if tok.value[0] == '>' {
+                new := argument{
+                    kind = argument_kind.Symbol_Offset,
+                    value_str = tok.value[1:],
+                }
+                append(&(stmt_chain^[top(stmt_chain)].args), new)
+                continue
+            }
+
             // fallback - symbol literal
             new := argument{
                 kind = argument_kind.Symbol,
@@ -150,7 +159,7 @@ check_stmt_chain :: proc(stmt_chain: ^[dynamic]statement) {
                     ref_args := native_instructions[n].args
                     match := true
                     for i := 0; i < len(ref_args); i += 1 {
-                        if ref_args[i] != args[i] {
+                        if !comp_arg(ref_args[i], args[i]) { // REPLACE WITH CUSTOM COMPARISON FUNC
                             match = false
                             break
                         }
@@ -177,7 +186,7 @@ check_stmt_chain :: proc(stmt_chain: ^[dynamic]statement) {
                 die("ERR [line %d]: invalid arguments for \"%s\" - expected %v, got %v", st.line, st.name, ref_args, args)
             }
             for i := 0; i < len(ref_args); i += 1 {
-                if ref_args[i] != args[i] {
+                if !comp_arg(ref_args[i], args[i]) {
                     die("ERR [line %d]: invalid arguments for \"%s\" - expected %v, got %v", st.line, st.name, ref_args, args)
                 }
             }
@@ -318,6 +327,22 @@ resolve_labels :: proc(stmt_chain: ^[dynamic]statement) -> (labels, refs: int) {
             st.args[0].value_int = u64(diff / 4)
         }
 
+        if st.kind == statement_kind.Instruction {
+            for a, argi in st.args {
+                if a.kind != argument_kind.Symbol_Offset {
+                    continue
+                }
+
+                addr, ok := symbol_table[a.value_str]
+                if !ok {
+                    die("ERR [line %d]: symbol not declared \"%s\"", st.line, a.value_str)
+                }
+
+                diff := i64(addr - st.loc)
+                st.args[argi].value_int = u64(diff)
+            }
+        }
+
     }
     return
 }
@@ -344,44 +369,4 @@ unescape :: proc(x: string) -> (res: string, err := "") {
         }
     }
     return
-}
-
-// todo make custom destructor
-statement :: struct {
-    kind        : statement_kind,   // what kind of statement it is
-    name        : string,           // name without formatting
-    args        : [dynamic]argument,// arguments
-    line        : u64,              // line number for error display
-
-    opcode      : u8,               // opcode
-    func        : u8,               // func
-    rde         : u8,               // r1 for instruction encoding
-    rs1         : u8,               // r2 for instruction encoding
-    rs2         : u8,               // r3 for instruction encoding
-    imm         : u64,               // imm for instruction encoding
-
-    loc         : u64,              // location in image
-    size        : u64,              // size of statement in bytes
-}
-
-argument :: struct {
-    kind        : argument_kind,    // what kind of argument it is
-    value_int   : u64,              // int value, if applicable
-    value_str   : string,           // string value, if applicable
-}
-
-statement_kind :: enum {
-    Unresolved = 0,
-    Instruction,
-    Directive,
-    Label,
-}
-
-argument_kind :: enum {
-    Unresolved = 0,
-    Ignore,      // was useful for doing argument checking - might delete now that it's not really that useful
-    Register,
-    Integer,    // any single literal data point that isn't a string, eg raw hex, etc
-    Symbol,
-    String,
 }

@@ -1,7 +1,7 @@
 all: build
 
 BUILD_INPATH = ./src
-BUILD_FLAGS = -o:speed -out:./bin/luna.exe
+BUILD_FLAGS = -o:speed -out:./bin/luna
 
 STRESSTEST_INPATH = ./test/twomil.aphel
 TEST_INPATH = ./test/test.aphel
