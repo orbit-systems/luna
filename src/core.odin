@@ -5,7 +5,7 @@ package luna
 // ╰──────╯
 // by spsandwichman
 
-// using aphelion v0.2.1
+// using aphelion v0.2.2
 
 // todo test    : lexer, parser, embedder
 // todo finish  : 

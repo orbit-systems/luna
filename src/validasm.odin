@@ -154,6 +154,10 @@ fmt :: instruction_fmt
 iff :: instruction_fmt_field
 
 instruction_aliases := map[string][]string{
+
+    "cmp"   = []string{"cmpi", "cmpr"},
+    "test"  = []string{"cmpi", "cmpr"},
+
     "add"   = []string{"addi", "addr"},
     "adc"   = []string{"adci", "adcr"},
     "sub"   = []string{"subi", "subr"},
@@ -330,6 +334,22 @@ native_instructions := map[string]native_instruction{
                 fields = {iff.RDE,      iff.RS1},
                 format = fmt.M,
                 opcode = 0x27,
+                func   = 0,
+            },
+    "cmpr"  = native_instruction{
+                name   = "cmpr",
+                args   = {ak.Register,  ak.Register},
+                fields = {iff.RS1,      iff.RS2},
+                format = fmt.R,
+                opcode = 0x28,
+                func   = 0,
+            },
+    "cmpi"  = native_instruction{
+                name   = "cmpi",
+                args   = {ak.Register,  ak.Integer},
+                fields = {iff.RS1,      iff.IMM},
+                format = fmt.M,
+                opcode = 0x29,
                 func   = 0,
             },
 

@@ -94,19 +94,14 @@ preprocess :: proc(t: string) -> (res: string) {
     // pseudo-instructions
     {
         for l, index in str.split_lines(res) {
-            if !str.contains(l, "test") && !str.contains(l, "li") {
+            if !str.contains(l, "li") {
                 continue
             }
 
             line_tokens : [dynamic]btoken
             tokenize(l, &line_tokens) // lmfao invoking the lexer on a single line actually works pretty well
 
-            if len(line_tokens) == 3 && line_tokens[0].value == "test" {
-                expansion := fmt.aprintf("add rz %s %s", line_tokens[1].value, line_tokens[2].value)
-
-                res, _ = str.replace_all(res, l, expansion)
-                delete(expansion)
-            } else if len(line_tokens) == 3 && line_tokens[0].value == "li" {
+            if len(line_tokens) == 3 && line_tokens[0].value == "li" {
                 imm, ok := strconv.parse_i64(line_tokens[2].value)
                 if !ok {
                     die("ERR [line %d]: cannot parse int \"%s\"", index, line_tokens[2].value)
