@@ -16,7 +16,7 @@ build:
 	@odin build $(BUILD_INPATH) $(BUILD_FLAGS)
 
 test: build
-	@./bin/luna $(TEST_INPATH) $(TEST_FLAGS)
+	@$(BUILD_OUTPATH) $(TEST_INPATH) $(TEST_FLAGS)
 
 stresstest: build
-	@./bin/luna $(STRESSTEST_INPATH) $(TEST_FLAGS)
+	@$(BUILD_OUTPATH) $(STRESSTEST_INPATH) $(TEST_FLAGS)
