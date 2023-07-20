@@ -2,3 +2,6 @@
 *.o
 *.ps1
 *.bin
+
+luna
+.vscode
