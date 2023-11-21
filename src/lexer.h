@@ -31,8 +31,8 @@ typedef struct token_s {
 
 typedef struct token_buf_s {
     token* base;
-    size_t len;
-    size_t cap;
+    u64    len;
+    u64    cap;
 } token_buf;
 
 typedef struct lexer_state_s {
