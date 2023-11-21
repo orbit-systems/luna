@@ -1,10 +1,10 @@
 *.exe
 *.o
+*.d
 *.ps1
 *.bin
 
 luna
-luna.*
 build
 build/
 .vscode

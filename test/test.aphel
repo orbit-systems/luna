@@ -1,4 +1,3 @@
-
 .bind this_random_function_pointer "global"
 
 .symbol a_random_symbol 300         // create and set symbol "a_random_symbol" to 300

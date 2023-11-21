@@ -1,22 +1,40 @@
-all: build
+SRCPATHS = src/*.c
+SRC = $(wildcard $(SRCPATHS))
+OBJECTS = $(SRC:src/%.c=build/%.o)
 
-BUILD_INPATH = ./src
-BUILD_OUTPATH = ./bin/luna
+EXECUTABLE_NAME = luna
+
 ifeq ($(OS),Windows_NT)
-	BUILD_OUTPATH = ./bin/luna.exe
+	EXECUTABLE_NAME = $(EXECUTABLE_NAME).exe
 endif
 
-BUILD_FLAGS = -o:speed -out:$(BUILD_OUTPATH)
+CC = clang
 
-STRESSTEST_INPATH = ./test/twomil.aphel
-TEST_INPATH = ./test/test.aphel
-TEST_FLAGS = -out:test/out.bin -debug -no-color # apparently make has trouble displaying ansi codes
+DEBUGFLAGS = -g -rdynamic -pg
+ASANFLAGS = -fsanitize=undefined -fsanitize=address
+DONTBEAFUCKINGIDIOT = -Werror -Wall -Wextra -pedantic -Wno-missing-field-initializers -Wno-unused-result
+CFLAGS = -O3
+SHUTTHEFUCKUP = -Wno-unknown-warning-option -Wno-incompatible-pointer-types-discards-qualifiers -Wno-initializer-overrides -Wno-discarded-qualifiers -Wno-incompatible-pointer-types
 
-build:
-	@odin build $(BUILD_INPATH) $(BUILD_FLAGS)
+#MD adds a dependency file, .d to the directory. the line at the bottom
+#forces make to rebuild, if any dependences need it.
+#e.g if comet.h changes, it forces a rebuild
+#if core.c changes, it only rebuilds.
+
+build/%.o: src/%.c
+	$(CC) -c -o $@ $< $(CFLAGS) -MD $(SHUTTHEFUCKUP)
+
+build: $(OBJECTS)
+	$(CC) $(OBJECTS) -o $(EXECUTABLE_NAME) $(CFLAGS) -MD
 
 test: build
-	@$(BUILD_OUTPATH) $(TEST_INPATH) $(TEST_FLAGS)
+	@echo ""
+	./$(EXECUTABLE_NAME) test/test.aphel -o:test/out.apo
 
-stresstest: build
-	@$(BUILD_OUTPATH) $(STRESSTEST_INPATH) $(TEST_FLAGS)
+debug:
+	$(DEBUGFLAGS) $(DONTBEAFUCKINGIDIOT)
+
+clean:
+	rm -f build/*
+
+-include $(OBJECTS:.o=.d)
