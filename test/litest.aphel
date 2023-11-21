@@ -1,5 +1,0 @@
-.loc 0xA00
-
-li      ra, 0x0123_4567_89AB_CDEF
-nop
-inv

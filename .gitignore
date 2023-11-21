@@ -4,4 +4,7 @@
 *.bin
 
 luna
+luna.*
+build
+build/
 .vscode

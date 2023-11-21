@@ -1,14 +1,27 @@
-.loc 0xA00          // beginning of RAM
 
-.align 4
-label_1:
-    lli ra, -0x30      // a number
-    add rc, ra, ra     // double the number
-    mul rc, ra, 2      // you could also double it like this
-    shl rc, ra, 1      // you could double it like this too
-    bra label_1        // loop unconditionally
+.bind this_random_function_pointer global
 
-.loc 0xA30
+.symbol a_random_symbol 300         // create and set symbol "a_random_symbol" to 300
+    .bind a_random_symbol global    // make the symbol visible to other object code files
+    .reloc a_random_symbol absolute // make sure the symbol's value stays constant during relocation
 
-label_2:
-    .string "test string\0"
+.program "code" {
+    this_random_function_code:
+        li      ra, some_data   // load ra with value of some_data (address)
+        lw      rb, [ra]        // load rb with value AT ra
+        add     rb, rb, 0x10    // increment by 10
+        sw      [ra], rb        // store it back
+}
+
+.program "data" {
+    this_random_function_pointer:
+        u64     this_random_function_code
+
+    some_data:
+        u64     0xCAFEF00D
+}
+
+.metadata {
+    "arbitrary" = "pairs",
+    "of keys"   = "and values",
+}
