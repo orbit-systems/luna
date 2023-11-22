@@ -36,5 +36,5 @@ typedef uint8_t  bool;
 
 #define die(msg, ...) \
     printf("ERROR: "); \
-    printf(msg, __VA_ARGS__); \
+    printf(msg __VA_OPT__(,) __VA_ARGS__); \
     exit(EXIT_FAILURE)
