@@ -1,8 +1,18 @@
-.bind this_random_function_pointer "global"
+/*
+bindings (visiblity):
+    local       default; visible within object
+    global      visible to other object files
+    weak        visible to other object files but can be overridden by a global symbol with the same name
+
+relocs:
+    location    default for labels; symbol value is changed based on its relative position within a section
+    absolute    default for .symbol delcarations; symbol value does not change during relocation. a label cannot have absolute binding.
+*/
+
+.global this_random_function_pointer
 
 .symbol a_random_symbol 300         // create and set symbol "a_random_symbol" to 300
-.bind a_random_symbol "global"      // make the symbol visible to other object code files
-.reloc a_random_symbol "absolute"   // make sure the symbol's value stays constant during relocation
+.global a_random_symbol global    // make the symbol visible to other object code files
 
 .program "code" {
     this_random_function_code:

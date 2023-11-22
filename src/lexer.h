@@ -1,5 +1,5 @@
 #pragma once
-#define LUNA_LEXER_H
+#define LEXER_H
 
 #include "luna.h"
 
