@@ -11,10 +11,10 @@ relocs:
 
 .global this_random_function_pointer
 
-.symbol a_random_symbol 300 // create and set symbol "a_random_symbol" to 300
-.global a_random_symbol     // make the symbol visible to other object code files
+.declare a_random_symbol 300    // create and set symbol "a_random_symbol" to 300
+.global  a_random_symbol        // make the symbol visible to other object code files
 
-.program "code" {
+.section "code" {
     this_random_function_code:
         li      ra, some_data   // load ra with value of some_data (address)
         lw      rb, [ra]        // load rb with value AT ra
@@ -22,12 +22,24 @@ relocs:
         sw      [ra], rb        // store it back
 }
 
-.program "data" {
-    this_random_function_pointer:
-        u64     this_random_function_code
-
+.section "data" {
     some_data:
         u64     0xCAFEF00D
+}
+
+.section "rodata" {
+    this_random_function_pointer:
+        u64     this_random_function_code
+    a_string:
+        utf8    "bruh"
+}
+
+// a blank type section won't actually take up any space in the object file and will be zeroed.
+// blank has the same default perms as regular sections wtih "data" as their name
+.blank "bss" {
+    some_big_struct: 
+        byte    0, 60   // make 60 bytes of zero
+        u32     23201   // this will still get zeroed but emit a warning
 }
 
 .metadata {

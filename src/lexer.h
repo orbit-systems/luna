@@ -11,6 +11,7 @@ typedef u8 token_type; enum {
     
     tt_identifier,      // real_shit
     
+    tt_newline,         // new line '\n'
     tt_open_bracket,    // [
     tt_close_bracket,   // ]
     tt_open_brace,      // {
@@ -24,8 +25,8 @@ typedef u8 token_type; enum {
 };
 
 typedef struct token_s {
-    u64 start;
-    u64 len;
+    u32 start;
+    u32 len;
     token_type type;
 } token;
 
@@ -41,6 +42,7 @@ typedef struct lexer_state_s {
     char* text_path;
 
     u64   cursor;
+    char  current_char;
 
     token_buf tokens;
 
@@ -48,11 +50,11 @@ typedef struct lexer_state_s {
 
 #define EOF_TOKEN (token){0,0, tt_EOF}
 
-#define current_char(lex) (lex.cursor < lex.text_len ? lex.text[lex.cursor] : '\0')
-#define advance_char(lex) (lex.cursor+1 < lex.text_len ? lex.text[lex.cursor] : '\0')
-#define peek_char(lex, amnt) ((lex.cursor + amnt) < lex.text_len ? lex.text[lex.cursor + amnt] : '\0')
+#define current_char(lex) (lex->current_char)
+#define advance_char(lex) (lex->cursor+1 < lex->text_len ? (lex->current_char = lex->text[++lex->cursor]) : '\0')
+#define peek_char(lex, amnt) ((lex->cursor + amnt) < lex->text_len ? lex->text[lex->cursor + amnt] : '\0')
+void next_token(lexer_state* l);
 
-void tokenize(lexer_state* lexer);
 void token_buf_init(token_buf* buffer, u64 capacity);
 void token_buf_append(token_buf* buffer, token t);
 #define token_buf_get(buf, index) (index < buf.len ? buf.base[index] : EOF_TOKEN)

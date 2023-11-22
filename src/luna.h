@@ -32,4 +32,9 @@ typedef uint8_t  bool;
 
 #define TODO(msg) \
     printf("TODO: \"%s\" at %s:%d\n", (msg), (__FILE__), (__LINE__)); \
-    exit(EXIT_FAILURE) \
+    exit(EXIT_FAILURE)
+
+#define die(msg, ...) \
+    printf("ERROR: "); \
+    printf(msg, __VA_ARGS__); \
+    exit(EXIT_FAILURE)
