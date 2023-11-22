@@ -11,8 +11,8 @@ relocs:
 
 .global this_random_function_pointer
 
-.symbol a_random_symbol 300         // create and set symbol "a_random_symbol" to 300
-.global a_random_symbol global    // make the symbol visible to other object code files
+.symbol a_random_symbol 300 // create and set symbol "a_random_symbol" to 300
+.global a_random_symbol     // make the symbol visible to other object code files
 
 .program "code" {
     this_random_function_code:
