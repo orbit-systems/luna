@@ -2,10 +2,12 @@ SRCPATHS = src/*.c
 SRC = $(wildcard $(SRCPATHS))
 OBJECTS = $(SRC:src/%.c=build/%.o)
 
-EXECUTABLE_NAME = luna
+NAME = luna
 
 ifeq ($(OS),Windows_NT)
-	EXECUTABLE_NAME = $(EXECUTABLE_NAME).exe
+	EXECUTABLE_NAME = $(NAME).exe
+else
+	EXECUTABLE_NAME = $(NAME)
 endif
 
 CC = clang
