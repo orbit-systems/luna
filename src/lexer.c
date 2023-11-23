@@ -36,7 +36,6 @@ void append_next_token(lexer_state* l) {
         case ' ':
             advance_char(l);
             continue;
-        
         case '/':
             if (peek_char(l, 1) == '/') {
                 while(current_char(l) != '\n') advance_char(l);
