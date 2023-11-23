@@ -3,14 +3,13 @@ SRC = $(wildcard $(SRCPATHS))
 OBJECTS = $(SRC:src/%.c=build/%.o)
 
 NAME = luna
+CC = clang
 
 ifeq ($(OS),Windows_NT)
 	EXECUTABLE_NAME = $(NAME).exe
 else
 	EXECUTABLE_NAME = $(NAME)
 endif
-
-CC = clang
 
 DEBUGFLAGS = -g -rdynamic -pg
 ASANFLAGS = -fsanitize=undefined -fsanitize=address
