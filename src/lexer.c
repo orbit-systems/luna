@@ -61,29 +61,71 @@ void append_next_token(lexer_state* l) {
             } else {
                 die("expected '*' or '/' after '/'\n");
             }
-
-        case '\n': token_buf_append(l, (token){l->cursor, 1, tt_newline});       advance_char(l); return;
-        case '[':  token_buf_append(l, (token){l->cursor, 1, tt_open_bracket});  advance_char(l); return;
-        case ']':  token_buf_append(l, (token){l->cursor, 1, tt_close_bracket}); advance_char(l); return;
-        case '{':  token_buf_append(l, (token){l->cursor, 1, tt_open_brace});    advance_char(l); return;
-        case '}':  token_buf_append(l, (token){l->cursor, 1, tt_close_brace});   advance_char(l); return;
-        case '=':  token_buf_append(l, (token){l->cursor, 1, tt_equal});         advance_char(l); return;
-        case ',':  token_buf_append(l, (token){l->cursor, 1, tt_comma});         advance_char(l); return;
-        case '.':  token_buf_append(l, (token){l->cursor, 1, tt_period});        advance_char(l); return;
-        case ':':  token_buf_append(l, (token){l->cursor, 1, tt_colon});         advance_char(l); return;
-        case '\0': token_buf_append(l, EOF_TOKEN); return;
+        
+        case '\'':
+            {
+            u64 beginning = l->cursor;
+            advance_char(l);
+            while (true) {
+                switch (current_char(l)) {
+                case '\'':
+                    advance_char(l);
+                    token_buf_append(&l->tokens, (token){beginning, l->cursor - beginning, tt_string_literal});
+                    return;
+                case '\\':
+                    advance_char_n(l,2);
+                    break;
+                case '\n':
+                    die("unclosed char literal");
+                default:
+                    advance_char(l);
+                    break;
+                }
+            }}
+            break;
+        case '\"':
+            {
+            u64 beginning = l->cursor;
+            advance_char(l);
+            while (true) {
+                switch (current_char(l)) {
+                case '\"':
+                    advance_char(l);
+                    token_buf_append(&l->tokens, (token){beginning, l->cursor - beginning, tt_string_literal});
+                    return;
+                case '\\':
+                    advance_char_n(l,2);
+                    break;
+                case '\n':
+                    die("unclosed string literal");
+                default:
+                    advance_char(l);
+                    break;
+                }
+            }}
+            break;
+        case '\n': token_buf_append(&l->tokens, (token){l->cursor, 1, tt_newline});       advance_char(l); return;
+        case '[':  token_buf_append(&l->tokens, (token){l->cursor, 1, tt_open_bracket});  advance_char(l); return;
+        case ']':  token_buf_append(&l->tokens, (token){l->cursor, 1, tt_close_bracket}); advance_char(l); return;
+        case '{':  token_buf_append(&l->tokens, (token){l->cursor, 1, tt_open_brace});    advance_char(l); return;
+        case '}':  token_buf_append(&l->tokens, (token){l->cursor, 1, tt_close_brace});   advance_char(l); return;
+        case '=':  token_buf_append(&l->tokens, (token){l->cursor, 1, tt_equal});         advance_char(l); return;
+        case ',':  token_buf_append(&l->tokens, (token){l->cursor, 1, tt_comma});         advance_char(l); return;
+        case '.':  token_buf_append(&l->tokens, (token){l->cursor, 1, tt_period});        advance_char(l); return;
+        case ':':  token_buf_append(&l->tokens, (token){l->cursor, 1, tt_colon});         advance_char(l); return;
+        case '\0': token_buf_append(&l->tokens, EOF_TOKEN); return;
         default: 
             if (can_start_identifier(current_char(l))) {
                 u64 start_index = l->cursor;
                 scan_identifier(l);
                 u16 length = l->cursor - start_index;
-                token_buf_append(l, (token){start_index, length, tt_identifier});
+                token_buf_append(&l->tokens, (token){start_index, length, tt_identifier});
                 return;
             } else if (can_start_number(current_char(l))) {
                 u64 start_index = l->cursor;
                 scan_int_literal(l);
                 u16 length = l->cursor - start_index;
-                token_buf_append(l, (token){start_index, length, tt_int_literal});
+                token_buf_append(&l->tokens, (token){start_index, length, tt_int_literal});
                 return;
             } else {
                 die("unrecognized char '%c'\n", current_char(l));
