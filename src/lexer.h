@@ -4,6 +4,7 @@
 #include "luna.h"
 
 typedef u8 token_type; enum {
+    tt_invalid,
 
     tt_char_literal,    // 'a'
     tt_int_literal,     // 800, 0x800, 0o127, 0b230
@@ -23,6 +24,8 @@ typedef u8 token_type; enum {
 
     tt_EOF,             // end of file
 };
+
+extern char* token_type_str[];
 
 typedef struct token_s {
     u32        start;
@@ -56,14 +59,21 @@ typedef struct lexer_state_s {
 #define EOF_TOKEN ((token){0,0, tt_EOF})
 
 #define current_char(lex) (lex->current_char)
-#define advance_char(lex) (lex->cursor+1 < lex->text_len ? (lex->current_char = lex->text[++lex->cursor]) : '\0')
+#define advance_char(lex) (lex->cursor < lex->text_len ? (lex->current_char = lex->text[++lex->cursor]) : '\0')
 #define advance_char_n(lex, n) (lex->cursor+n < lex->text_len ? (lex->current_char = lex->text[lex->cursor += n]) : '\0')
 #define peek_char(lex, amnt) ((lex->cursor + amnt) < lex->text_len ? lex->text[lex->cursor + amnt] : '\0')
 void append_next_token(lexer_state* l);
 
 void token_buf_init(token_buf* buffer, u64 capacity);
 void token_buf_append(token_buf* buffer, token t);
+void token_buf_shrink(token_buf* buffer);
 #define token_buf_get(buf, index) (index < buf.len ? buf.base[index] : EOF_TOKEN)
+#define token_buf_top(buf) (buf.base[buf.len-1])
+
+void print_token(lexer_state* l, token* t);
+
+void lexer_init(lexer_state* lexer, char* text_path, char* text, u64 text_len);
+void append_next_token(lexer_state* l);
 
 void scan_identifier(lexer_state* l);
 void scan_int_literal(lexer_state* l);

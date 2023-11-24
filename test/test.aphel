@@ -20,6 +20,7 @@ relocs:
         lw      rb, [ra]        // load rb with value AT ra
         add     rb, rb, 10      // increment by 10
         sw      [ra], rb        // store it back
+        ret
 }
 
 .section "data" {

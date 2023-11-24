@@ -1,7 +1,30 @@
-#include "lexer.h"
 #include "luna.h"
+#include "lexer.h"
+
+char* token_type_str[] = {
+    "tt_invalid",
+
+    "tt_char_literal",
+    "tt_int_literal",
+    "tt_string_literal",
+
+    "tt_identifier",
+
+    "tt_newline",
+    "tt_open_bracket",
+    "tt_close_bracket",
+    "tt_open_brace",
+    "tt_close_brace",
+    "tt_equal",
+    "tt_comma",
+    "tt_period",
+    "tt_colon",
+    
+    "tt_EOF",
+};
 
 void token_buf_init(token_buf* buffer, u64 capacity) {
+    *buffer = (token_buf){};
     if (capacity == 0) capacity = 1;
 
     *buffer = (token_buf){NULL, 0, capacity};
@@ -25,6 +48,8 @@ void lexer_init(lexer_state* lexer, char* text_path, char* text, u64 text_len) {
     lexer->text = text;
     lexer->text_len = text_len;
     lexer->text_path = text_path;
+    lexer->cursor = 0;
+    lexer->current_char = text[0];
     token_buf_init(&lexer->tokens, 16);
 }
 
@@ -54,6 +79,8 @@ void append_next_token(lexer_state* l) {
                     } else if (current_char(l) == '*' && peek_char(l, 1) == '/') {
                         advance_char_n(l,2);
                         level--;
+                    } else {
+                        advance_char(l);
                     }
                 }
                 continue;
@@ -145,14 +172,18 @@ void scan_int_literal(lexer_state* l) {
         advance_char(l);
     }
     if (current_char(l) == '0') {
+        advance_char(l);
         switch (current_char(l)) {
         case 'x':
+            advance_char(l);
             while (valid_0x(current_char(l))) advance_char(l);
             break;
         case 'o':
+            advance_char(l);
             while (valid_0o(current_char(l))) advance_char(l);
             break;
         case 'b':
+            advance_char(l);
             while (valid_0b(current_char(l))) advance_char(l);
             break;
         case 'd':
@@ -161,5 +192,13 @@ void scan_int_literal(lexer_state* l) {
             while (valid_0d(current_char(l))) advance_char(l);
             break;
         }
+    } else {
+        while (valid_0d(current_char(l))) advance_char(l);    
+    }
+}
+
+void print_token(lexer_state* l, token* t) {
+    for (int i = 0; i < t->len; i++) {
+        printf("%c", l->text[t->start+i]);
     }
 }
