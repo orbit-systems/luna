@@ -27,9 +27,9 @@ build/%.o: src/%.c
 
 build: $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(EXECUTABLE_NAME) $(CFLAGS) -MD
+	@echo ""
 
 test: build
-	@echo ""
 	./$(EXECUTABLE_NAME) test/test.aphel -o:test/out.apo
 
 debug:

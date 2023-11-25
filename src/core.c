@@ -26,10 +26,11 @@ int main(int argc, char* argv[]) {
     while (lex.tokens.base[lex.tokens.len-1].type != tt_EOF) {
         append_next_token(&lex);
     }
-    for (int i = 0; i < lex.tokens.len; i++) {
-        print_token(&lex, &(lex.tokens.base[i]));
-        printf(" ");
-    }
+    // for (int i = 0; i < lex.tokens.len; i++) {
+    //     print_token(&lex, &(lex.tokens.base[i]));
+    //     printf(" ");
+    // }
+    printf("%d tokens scanned\n", lex.tokens.len);
     dynarr_destroy(token, &lex.tokens);
 }
 
@@ -42,11 +43,20 @@ void print_help() {
 u8* load_file(FILE* asm_file) {
     fseek(asm_file, 0, SEEK_END);
     long file_size = ftell(asm_file);
-    fseek(asm_file, 0, SEEK_SET);
+    rewind(asm_file);
 
     u8* asm_string = (u8*) malloc(file_size+1);
+    if (asm_string == NULL) {
+        die("fuck (load_file)\n");
+    }
+    memset(asm_string, 0, file_size);
     fread(asm_string, file_size, 1, asm_file);
+    if (ferror(asm_file)) {
+        die("fread fucked up for SOME REASON %d\n", ferror(asm_file));
+    }
+
     asm_string[file_size] = '\0';
+
     return asm_string;
 }
 

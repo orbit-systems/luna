@@ -1,5 +1,6 @@
 #include "luna.h"
 #include "lexer.h"
+#include "dynarr.h"
 
 typedef u8 param_type; enum {
     pt_reg,
@@ -20,13 +21,18 @@ typedef struct param_s {
     param_type type;
 } param;
 
+dynarr_lib_h(param)
+
 typedef u8 entity_type; enum {
     et_instruction,
     et_label,
+    et_directive,
+    et_section,
+    et_metadata,
 };
 
 typedef struct entity_s {
-    u32 start, end; // first and last tokens in the
+    u32 start, end; // first and last tokens encompassing the statement
     entity_type type;
     dynarr(param) params;
 } entity;
