@@ -37,6 +37,3 @@ void dynarr_##type##_append(dynarr(type)* arr, type item) {\
 void dynarr_##type##_shrink(dynarr(type)* arr) {\
     arr->base = (type*) realloc(arr->base, sizeof(type) * arr->len);\
 }\
-
-dynarr_lib_h(int)
-dynarr_lib(int)
