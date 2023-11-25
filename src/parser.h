@@ -28,4 +28,5 @@ typedef u8 entity_type; enum {
 typedef struct entity_s {
     u32 start, end; // first and last tokens in the
     entity_type type;
+    dynarr(param) params;
 } entity;

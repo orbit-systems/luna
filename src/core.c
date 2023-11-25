@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
         print_token(&lex, &(lex.tokens.base[i]));
         printf(" ");
     }
+    dynarr_destroy(token, &lex.tokens);
 }
 
 void print_help() {
