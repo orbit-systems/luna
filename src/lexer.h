@@ -68,7 +68,6 @@ void token_buf_init(token_buf* buffer, u64 capacity);
 void token_buf_append(token_buf* buffer, token t);
 void token_buf_shrink(token_buf* buffer);
 #define token_buf_get(buf, index) (index < buf.len ? buf.base[index] : EOF_TOKEN)
-#define token_buf_top(buf) (buf.base[buf.len-1])
 
 void print_token(lexer_state* l, token* t);
 

@@ -2,6 +2,10 @@
 #include "lexer.h"
 #include "core.h"
 
+// ╭──────╮
+// │ luna │ the Aphelion ISA assembler
+// ╰──────╯
+// by spsandwichman
 
 int main(int argc, char* argv[]) {
 
@@ -19,7 +23,7 @@ int main(int argc, char* argv[]) {
     lexer_state lex;
     lexer_init(&lex, flags.input_path, asm_string, strlen(asm_string));
 
-    while (token_buf_top(lex.tokens).type != tt_EOF) {
+    while (lex.tokens.base[lex.tokens.len-1].type != tt_EOF) {
         append_next_token(&lex);
     }
     for (int i = 0; i < lex.tokens.len; i++) {

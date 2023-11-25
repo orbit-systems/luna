@@ -9,6 +9,8 @@ relocs:
     absolute    default for .symbol delcarations; symbol value does not change during relocation. a label cannot have absolute binding.
 */
 
+.file "test.aphel"
+
 .global this_random_function_pointer
 
 .declare a_random_symbol 300    // create and set symbol "a_random_symbol" to 300
@@ -46,4 +48,6 @@ relocs:
 .metadata {
     "arbitrary" = "pairs",
     "of keys"   = "and values",
+    "compiler"  = "mars",
 }
+
