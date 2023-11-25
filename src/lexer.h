@@ -2,6 +2,7 @@
 #define LEXER_H
 
 #include "luna.h"
+#include "dynarr.h"
 
 typedef u8 token_type; enum {
     tt_invalid,
@@ -33,18 +34,15 @@ typedef struct token_s {
     token_type type;
 } token;
 
-typedef struct token_buf_s {
-    token* base;
-    u64    len;
-    u64    cap;
-} token_buf;
+dynarr_lib_h(token) // generate dynamic array library
+#define dynarr_token_get(buf, index) (index < buf.len ? buf.base[index] : EOF_TOKEN)
 
 typedef struct lexer_state_s {
     char*     text;
     u64       text_len;
     char*     text_path;
     u64       cursor;
-    token_buf tokens;
+    dynarr(token) tokens;
     char      current_char;
 } lexer_state;
 
@@ -63,11 +61,6 @@ typedef struct lexer_state_s {
 #define advance_char_n(lex, n) (lex->cursor+n < lex->text_len ? (lex->current_char = lex->text[lex->cursor += n]) : '\0')
 #define peek_char(lex, amnt) ((lex->cursor + amnt) < lex->text_len ? lex->text[lex->cursor + amnt] : '\0')
 void append_next_token(lexer_state* l);
-
-void token_buf_init(token_buf* buffer, u64 capacity);
-void token_buf_append(token_buf* buffer, token t);
-void token_buf_shrink(token_buf* buffer);
-#define token_buf_get(buf, index) (index < buf.len ? buf.base[index] : EOF_TOKEN)
 
 void print_token(lexer_state* l, token* t);
 
