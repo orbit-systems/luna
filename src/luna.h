@@ -34,3 +34,9 @@ typedef uint8_t  bool;
     printf("CRASH at %s:%d - ", (__FILE__), (__LINE__)); \
     printf(msg __VA_OPT__(,) __VA_ARGS__); \
     exit(EXIT_FAILURE); } while (0);
+
+
+typedef struct string_s {
+    char* base;
+    size_t len;
+} string;

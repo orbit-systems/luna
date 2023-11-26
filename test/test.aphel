@@ -28,7 +28,6 @@ section "code" {
 section "data" "rwx" {
     .bind some_data "global"
     // inline directives must be prefixed with . to distinguish from instructions
-    
     some_data:
         u64     0xCAFE_F00D
 }

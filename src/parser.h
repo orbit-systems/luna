@@ -21,3 +21,20 @@ typedef struct param_s {
     u32 token;
     param_type type;
 } param;
+
+
+
+typedef struct section_s {
+
+} section;
+
+typedef u8 symbol_bind; enum {
+    sb_local,
+    sb_global,
+    sb_weak,
+};
+
+typedef struct symbol_s {
+    char* identifier;
+    
+} symbol;
