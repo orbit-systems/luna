@@ -26,11 +26,11 @@ typedef uint8_t  bool;
 #define false 0
 #define true 1
 
-#define TODO(msg) \
+#define TODO(msg) do {\
     printf("TODO: \"%s\" at %s:%d\n", (msg), (__FILE__), (__LINE__)); \
-    exit(EXIT_FAILURE)
+    exit(EXIT_FAILURE) } while (0);
 
-#define die(msg, ...) \
-    printf("ERROR: "); \
+#define crash(msg, ...) do {\
+    printf("CRASH at %s:%d - ", (__FILE__), (__LINE__)); \
     printf(msg __VA_OPT__(,) __VA_ARGS__); \
-    exit(EXIT_FAILURE)
+    exit(EXIT_FAILURE); } while (0);

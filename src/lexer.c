@@ -56,7 +56,7 @@ void append_next_token(lexer_state* l) {
                 int level = 1;
                 while (level != 0) {
                     if (current_char(l) == '\0') {
-                        die("unclosed block comment\n");
+                        crash("unclosed block comment\n");
                     }
                     if (current_char(l) == '/' && peek_char(l, 1) == '*') {
                         advance_char_n(l,2);
@@ -70,7 +70,7 @@ void append_next_token(lexer_state* l) {
                 }
                 continue;
             } else {
-                die("expected '*' or '/' after '/'\n");
+                crash("expected '*' or '/' after '/'\n");
             }
         
         case '\'':
@@ -87,7 +87,7 @@ void append_next_token(lexer_state* l) {
                     advance_char_n(l,2);
                     break;
                 case '\n':
-                    die("unclosed char literal\n");
+                    crash("unclosed char literal\n");
                 default:
                     advance_char(l);
                     break;
@@ -108,7 +108,7 @@ void append_next_token(lexer_state* l) {
                     advance_char_n(l,2);
                     break;
                 case '\n':
-                    die("unclosed string literal\n");
+                    crash("unclosed string literal\n");
                 default:
                     advance_char(l);
                     break;
@@ -139,7 +139,7 @@ void append_next_token(lexer_state* l) {
                 dynarr_append_token(&l->tokens, (token){start_index, length, tt_int_literal});
                 return;
             } else {
-                die("unrecognized char '%c' (0x%x)\n", current_char(l), current_char(l));
+                crash("unrecognized char '%c' (0x%x)\n", current_char(l), current_char(l));
             }
             break;
         }

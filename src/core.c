@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 
     FILE* asm_file = fopen(flags.input_path, "r");
     if (asm_file == NULL) {
-        die("could not open file \"%s\"\n", flags.input_path);
+        crash("could not open file \"%s\"\n", flags.input_path);
         exit(EXIT_FAILURE);
     }
     char* asm_string = (char*) load_file(asm_file);
@@ -47,12 +47,12 @@ u8* load_file(FILE* asm_file) {
 
     u8* asm_string = (u8*) malloc(file_size+1);
     if (asm_string == NULL) {
-        die("fuck (load_file)\n");
+        crash("fuck (load_file)\n");
     }
     memset(asm_string, 0, file_size);
     fread(asm_string, file_size, 1, asm_file);
     if (ferror(asm_file)) {
-        die("fread fucked up for SOME REASON %d\n", ferror(asm_file));
+        crash("fread fucked up for SOME REASON %d\n", ferror(asm_file));
     }
 
     asm_string[file_size] = '\0';
