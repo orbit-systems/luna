@@ -48,11 +48,11 @@ typedef struct lexer_state_s {
 
 #define can_start_identifier(ch) ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_')
 #define can_start_number(ch) ((ch >= '0' && ch <= '9') || ch == '-')
-#define valid_digit(ch) ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F'))
-#define valid_0x(ch) ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F'))
-#define valid_0d(ch) (ch >= '0' && ch <= '9')
-#define valid_0o(ch) (ch >= '0' && ch <= '7')
-#define valid_0b(ch) (ch == '0' || ch == '1')
+#define valid_digit(ch) ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') || (ch == '_'))
+#define valid_0x(ch) ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') || (ch == '_'))
+#define valid_0d(ch) ((ch >= '0' && ch <= '9') || (ch == '_'))
+#define valid_0o(ch) ((ch >= '0' && ch <= '7') || (ch == '_'))
+#define valid_0b(ch) (ch == '0' || ch == '1' || (ch == '_'))
 
 #define EOF_TOKEN ((token){0,0, tt_EOF})
 

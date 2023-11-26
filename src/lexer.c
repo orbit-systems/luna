@@ -33,7 +33,7 @@ void lexer_init(lexer_state* lexer, char* text_path, char* text, u64 text_len) {
     lexer->text_path = text_path;
     lexer->cursor = 0;
     lexer->current_char = text[0];
-    dynarr_token_init(&lexer->tokens, 16);
+    dynarr_init(token, &lexer->tokens, 16);
 }
 
 void append_next_token(lexer_state* l) {
@@ -81,7 +81,7 @@ void append_next_token(lexer_state* l) {
                 switch (current_char(l)) {
                 case '\'':
                     advance_char(l);
-                    dynarr_token_append(&l->tokens, (token){beginning, l->cursor - beginning, tt_string_literal});
+                    dynarr_append_token(&l->tokens, (token){beginning, l->cursor - beginning, tt_string_literal});
                     return;
                 case '\\':
                     advance_char_n(l,2);
@@ -102,7 +102,7 @@ void append_next_token(lexer_state* l) {
                 switch (current_char(l)) {
                 case '\"':
                     advance_char(l);
-                    dynarr_token_append(&l->tokens, (token){beginning, l->cursor - beginning, tt_string_literal});
+                    dynarr_append_token(&l->tokens, (token){beginning, l->cursor - beginning, tt_string_literal});
                     return;
                 case '\\':
                     advance_char_n(l,2);
@@ -115,28 +115,28 @@ void append_next_token(lexer_state* l) {
                 }
             }}
             break; 
-        case '\n': dynarr_token_append(&l->tokens, (token){l->cursor, 1, tt_newline});       advance_char(l); return;
-        case '[':  dynarr_token_append(&l->tokens, (token){l->cursor, 1, tt_open_bracket});  advance_char(l); return;
-        case ']':  dynarr_token_append(&l->tokens, (token){l->cursor, 1, tt_close_bracket}); advance_char(l); return;
-        case '{':  dynarr_token_append(&l->tokens, (token){l->cursor, 1, tt_open_brace});    advance_char(l); return;
-        case '}':  dynarr_token_append(&l->tokens, (token){l->cursor, 1, tt_close_brace});   advance_char(l); return;
-        case '=':  dynarr_token_append(&l->tokens, (token){l->cursor, 1, tt_equal});         advance_char(l); return;
-        case ',':  dynarr_token_append(&l->tokens, (token){l->cursor, 1, tt_comma});         advance_char(l); return;
-        case '.':  dynarr_token_append(&l->tokens, (token){l->cursor, 1, tt_period});        advance_char(l); return;
-        case ':':  dynarr_token_append(&l->tokens, (token){l->cursor, 1, tt_colon});         advance_char(l); return;
-        case '\0': dynarr_token_append(&l->tokens, EOF_TOKEN); return;
+        case '\n': dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_newline});       advance_char(l); return;
+        case '[':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_open_bracket});  advance_char(l); return;
+        case ']':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_close_bracket}); advance_char(l); return;
+        case '{':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_open_brace});    advance_char(l); return;
+        case '}':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_close_brace});   advance_char(l); return;
+        case '=':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_equal});         advance_char(l); return;
+        case ',':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_comma});         advance_char(l); return;
+        case '.':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_period});        advance_char(l); return;
+        case ':':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_colon});         advance_char(l); return;
+        case '\0': dynarr_append_token(&l->tokens, EOF_TOKEN); return;
         default: 
             if (can_start_identifier(current_char(l))) {
                 u64 start_index = l->cursor;
                 scan_identifier(l);
                 u16 length = l->cursor - start_index;
-                dynarr_token_append(&l->tokens, (token){start_index, length, tt_identifier});
+                dynarr_append_token(&l->tokens, (token){start_index, length, tt_identifier});
                 return;
             } else if (can_start_number(current_char(l))) {
                 u64 start_index = l->cursor;
                 scan_int_literal(l);
                 u16 length = l->cursor - start_index;
-                dynarr_token_append(&l->tokens, (token){start_index, length, tt_int_literal});
+                dynarr_append_token(&l->tokens, (token){start_index, length, tt_int_literal});
                 return;
             } else {
                 die("unrecognized char '%c' (0x%x)\n", current_char(l), current_char(l));

@@ -9,28 +9,31 @@ relocs:
     absolute    default for .symbol delcarations; symbol value does not change during relocation. a label cannot have absolute binding.
 */
 
-.file "test.aphel"
+from "test.aphel"
 
-.global this_random_function_pointer
 
-.declare a_random_symbol 300    // create and set symbol "a_random_symbol" to 300
-.global  a_random_symbol        // make the symbol visible to other object code files
+declare a_random_symbol 300     // create and set symbol "a_random_symbol" to 300
+bind a_random_symbol global         // make the symbol visible to other object code files
 
-.section "code" {
+type this_random_function_code function
+type this_random_function data
+
+section "code" {
     this_random_function_code:
         li      ra, some_data   // load ra with value of some_data (address)
         lw      rb, [ra]        // load rb with value AT ra
         add     rb, rb, 10      // increment by 10
         sw      [ra], rb        // store it back
+
         ret
 }
 
-.section "data" {
+section "data" {
     some_data:
-        u64     0xCAFEF00D
+        u64     0xCAFE_F00D
 }
 
-.section "rodata" {
+section "rodata" {
     this_random_function_pointer:
         u64     this_random_function_code
     a_string:
@@ -38,14 +41,14 @@ relocs:
 }
 
 // a blank type section won't actually take up any space in the object file and will be zeroed.
-// blank has the same default perms as regular sections wtih "data" as their name
-.blank "bss" {
+// blank has the same default perms as regular sections with "data" as their name
+blank "bss" {
     some_big_struct: 
         byte    0, 60   // make 60 bytes of zero
         u32     23201   // this will still get zeroed but emit a warning
 }
 
-.metadata {
+info {
     "arbitrary" = "pairs",
     "of keys"   = "and values",
     "compiler"  = "mars",
