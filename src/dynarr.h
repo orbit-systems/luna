@@ -18,7 +18,7 @@
         type* base;                                                             \
         size_t len;                                                             \
         size_t cap;                                                             \
-    } dynarr_##type;                                                            \
+    } dynarr(type);                                                             \
     void dynarr_init_##type(dynarr(type)* arr, size_t capacity);                \
     void dynarr_append_##type(dynarr(type)* arr, type item);                    \
     void dynarr_shrink_##type(dynarr(type)* arr);                               \

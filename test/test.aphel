@@ -9,14 +9,11 @@ relocs:
     absolute    default for .symbol delcarations; symbol value does not change during relocation. a label cannot have absolute binding.
 */
 
-from "test.aphel"
+define a_random_symbol 300      // create and set symbol "a_random_symbol" to 300
+bind a_random_symbol "global"   // make the symbol visible to other object code files
 
-
-declare a_random_symbol 300     // create and set symbol "a_random_symbol" to 300
-bind a_random_symbol global         // make the symbol visible to other object code files
-
-type this_random_function_code function
-type this_random_function data
+type this_random_function_code "function"
+type this_random_function "data"
 
 section "code" {
     this_random_function_code:
@@ -28,7 +25,11 @@ section "code" {
         ret
 }
 
-section "data" {
+// this section has read (r), write (w), and execute (x) permissions.
+section "data" "rwx" {
+    .bind some_data "global"
+    // inline directives must be prefixed with . to distinguish from instructions
+    
     some_data:
         u64     0xCAFE_F00D
 }
@@ -51,5 +52,7 @@ blank "bss" {
 info {
     "arbitrary" = "pairs",
     "of keys"   = "and values",
-    "compiler"  = "mars",
+
+    "compiler"  = "none",
 }
+

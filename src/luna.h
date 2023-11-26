@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <sys/time.h>
+#include <limits.h>
 
 // not gonna use stdbool fuck you
 typedef uint64_t u64;
@@ -24,11 +25,6 @@ typedef uint8_t  b8;
 typedef uint8_t  bool;
 #define false 0
 #define true 1
-
-#define U64_MAX (u64)0xFFFFFFFFFFFFFFFFull
-#define U64_MIN (u64)0ull
-#define I64_MAX (i64)0x7FFFFFFFFFFFFFFFll
-#define I64_MIN (i64)0x8000000000000000ll
 
 #define TODO(msg) \
     printf("TODO: \"%s\" at %s:%d\n", (msg), (__FILE__), (__LINE__)); \
