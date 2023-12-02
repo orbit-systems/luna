@@ -9,7 +9,7 @@ relocs:
     absolute    default for .symbol delcarations; symbol value does not change during relocation. a label cannot have absolute binding.
 */
 
-define a_random_symbol 300      // create and set symbol "a_random_symbol" to 300
+define a_random_symbol -123     // create and set symbol "a_random_symbol" to 300
 bind a_random_symbol "global"   // make the symbol visible to other object code files
 
 type this_random_function_code "function"
@@ -43,8 +43,9 @@ section "rodata" {
 // blank has the same default perms as regular sections with "data" as their name
 blank "bss" {
     some_big_struct: 
-        byte    0, 60   // make 60 bytes of zero
-        u32     23201   // this will still get zeroed but emit a warning
+        u8      0, 60       // make 60 bytes of zero
+        u32     23201       // error - non-zero values are not allowed in blank sections
+        u64     a_string    // error - symbol references are not allowed in blank sections
 }
 
 info {

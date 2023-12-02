@@ -1,27 +1,28 @@
 #include "luna.h"
 #include "dynarr.h"
 #include "lexer.h"
+#include "error.h"
 
 char* token_type_str[] = {
-    "tt_invalid",
+    "INVALID",
 
-    "tt_char_literal",
-    "tt_int_literal",
-    "tt_string_literal",
+    "character literal",
+    "int literal",
+    "string literal",
 
-    "tt_identifier",
+    "identifier",
 
-    "tt_newline",
-    "tt_open_bracket",
-    "tt_close_bracket",
-    "tt_open_brace",
-    "tt_close_brace",
-    "tt_equal",
-    "tt_comma",
-    "tt_period",
-    "tt_colon",
+    "newline",
+    "[",
+    "]",
+    "{",
+    "}",
+    "=",
+    ",",
+    ".",
+    ":",
     
-    "tt_EOF",
+    "EOF",
 };
 
 dynarr_lib(token)
@@ -56,7 +57,9 @@ void append_next_token(lexer_state* l) {
                 int level = 1;
                 while (level != 0) {
                     if (current_char(l) == '\0') {
-                        crash("unclosed block comment\n");
+                        error_at_position(l->text_path, l->text, l->cursor, 1,
+                            "unclosed block comment"
+                        );
                     }
                     if (current_char(l) == '/' && peek_char(l, 1) == '*') {
                         advance_char_n(l,2);
@@ -70,11 +73,12 @@ void append_next_token(lexer_state* l) {
                 }
                 continue;
             } else {
-                crash("expected '*' or '/' after '/'\n");
+                error_at_position(l->text_path, l->text, l->cursor, 1,
+                    "expected '*' or '/' after '/'"
+                );
             }
         
-        case '\'':
-            {
+        case '\'': {
             u64 beginning = l->cursor;
             advance_char(l);
             while (true) {
@@ -87,15 +91,16 @@ void append_next_token(lexer_state* l) {
                     advance_char_n(l,2);
                     break;
                 case '\n':
-                    crash("unclosed char literal\n");
+                    error_at_position(l->text_path, l->text, beginning, 1,
+                        "unclosed char literal"
+                    );
                 default:
                     advance_char(l);
                     break;
                 }
             }}
             break;
-        case '\"':
-            {
+        case '\"': {
             u64 beginning = l->cursor;
             advance_char(l);
             while (true) {
@@ -108,7 +113,9 @@ void append_next_token(lexer_state* l) {
                     advance_char_n(l,2);
                     break;
                 case '\n':
-                    crash("unclosed string literal\n");
+                    error_at_position(l->text_path, l->text, beginning, 1,
+                        "unclosed string literal"
+                    );
                 default:
                     advance_char(l);
                     break;
@@ -124,7 +131,7 @@ void append_next_token(lexer_state* l) {
         case ',':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_comma});         advance_char(l); return;
         case '.':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_period});        advance_char(l); return;
         case ':':  dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_colon});         advance_char(l); return;
-        case '\0': dynarr_append_token(&l->tokens, EOF_TOKEN); return;
+        case '\0': dynarr_append_token(&l->tokens, (token){l->cursor, 1, tt_EOF}); return;
         default: 
             if (can_start_identifier(current_char(l))) {
                 u64 start_index = l->cursor;
@@ -139,7 +146,9 @@ void append_next_token(lexer_state* l) {
                 dynarr_append_token(&l->tokens, (token){start_index, length, tt_int_literal});
                 return;
             } else {
-                crash("unrecognized char '%c' (0x%x)\n", current_char(l), current_char(l));
+                error_at_position(l->text_path, l->text, l->cursor, 1,
+                    "unrecognized char '%c' (0x%x)", current_char(l), current_char(l)
+                );
             }
             break;
         }

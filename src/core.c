@@ -1,6 +1,8 @@
 #include "luna.h"
-#include "lexer.h"
 #include "core.h"
+#include "arena.h"
+#include "lexer.h"
+#include "parser.h"
 
 // ╭──────╮
 // │ luna │ the Aphelion ISA assembler
@@ -9,9 +11,12 @@
 
 int main(int argc, char* argv[]) {
 
+    init_temp_arena();
+
     flag_set flags;
     load_arguments(argc, argv, &flags);
 
+    // load the assembly code into memory
     FILE* asm_file = fopen(flags.input_path, "r");
     if (asm_file == NULL) {
         crash("could not open file \"%s\"\n", flags.input_path);
@@ -20,17 +25,26 @@ int main(int argc, char* argv[]) {
     char* asm_string = (char*) load_file(asm_file);
     fclose(asm_file);
 
+
+    // lex, lex, lex!
     lexer_state lex;
     lexer_init(&lex, flags.input_path, asm_string, strlen(asm_string));
-
     while (lex.tokens.base[lex.tokens.len-1].type != tt_EOF) {
         append_next_token(&lex);
     }
     // for (int i = 0; i < lex.tokens.len; i++) {
-    //     print_token(&lex, &(lex.tokens.base[i]));
-    //     printf(" ");
+    //     if (lex.tokens.base[i].type == tt_newline)
+    //         printf("\n");
+    //     else
+    //         printf("%s ", token_type_str[lex.tokens.base[i].type]);
     // }
-    printf("%d tokens scanned\n", lex.tokens.len);
+    
+    // parse/interpret the file
+    parser p;
+    parser_init(&p, &lex);
+    parser_start(&p);
+
+
     dynarr_destroy(token, &lex.tokens);
 }
 
