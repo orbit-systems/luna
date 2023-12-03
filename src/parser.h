@@ -117,7 +117,7 @@ typedef struct parser_s {
 #define current_token(p) (p->tokens.base[p->current_token_index])
 #define advance_token(p) if (p->current_token_index < p->tokens.len) p->current_token_index++
 #define peek_token(p, amnt) (p->tokens.base[p->current_token_index + amnt])
-// TODO ^^^ make this safer
+// TODO ^^^ make this safer probably!
 
 #define tok_str_eq(p, token, string) (strlen(string) == token.len && strncmp(p->text + token.start, string, token.len) == 0)
 
@@ -128,3 +128,5 @@ void parser_start(parser* p);
 void parse_directive(parser* p, bool maybe_period);
 param parse_param(parser* p);
 u64 parse_int_value(parser* p);
+
+u64 _parse_integer(parser* p, token* t, u64 base, bool is_negative);

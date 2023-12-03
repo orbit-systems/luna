@@ -170,29 +170,29 @@ void scan_int_literal(lexer_state* l) {
         switch (current_char(l)) {
         case 'x':
             advance_char(l);
-            while (valid_0x(current_char(l))) advance_char(l);
+            while (valid_digit(current_char(l))) advance_char(l);
             break;
         case 'o':
             advance_char(l);
-            while (valid_0o(current_char(l))) advance_char(l);
+            while (valid_digit(current_char(l))) advance_char(l);
             break;
         case 'b':
             advance_char(l);
-            while (valid_0b(current_char(l))) advance_char(l);
+            while (valid_digit(current_char(l))) advance_char(l);
             break;
         case 'd':
             advance_char(l);
         default:
-            while (valid_0d(current_char(l))) advance_char(l);
+            while (valid_digit(current_char(l))) advance_char(l);
             break;
         }
     } else {
-        while (valid_0d(current_char(l))) advance_char(l);    
+        while (valid_digit(current_char(l))) advance_char(l);    
     }
 }
 
-void print_token(lexer_state* l, token* t) {
+void print_token(char* text, token* t) {
     for (int i = 0; i < t->len; i++) {
-        printf("%c", l->text[t->start+i]);
+        printf("%c", text[t->start+i]);
     }
 }

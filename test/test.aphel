@@ -9,7 +9,7 @@ relocs:
     absolute    default for .symbol delcarations; symbol value does not change during relocation. a label cannot have absolute binding.
 */
 
-define a_random_symbol -123     // create and set symbol "a_random_symbol" to 300
+define a_random_symbol 0x10     // create and set symbol "a_random_symbol" to 300
 bind a_random_symbol "global"   // make the symbol visible to other object code files
 
 type this_random_function_code "function"
@@ -33,10 +33,12 @@ section "data" "rwx" {
 }
 
 section "rodata" {
-    this_random_function_pointer:
-        u64     this_random_function_code
     a_string:
         utf8    "bruh"
+    
+    align 8 // do this so 
+    this_random_function_pointer:
+        u64     this_random_function_code
 }
 
 // a blank type section won't actually take up any space in the object file and will be zeroed.

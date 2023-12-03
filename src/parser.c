@@ -37,6 +37,7 @@ void parser_start(parser* p) {
 
 void parse_directive(parser* p, bool maybe_period) {
 
+    // skip possible period
     if (maybe_period && current_token(p).type == tt_period) 
         advance_token(p);
 
@@ -132,32 +133,57 @@ param parse_param(parser* p) {
 // parse an integer literal
 u64 parse_int_value(parser* p) {
     if (current_token(p).type != tt_int_literal)
-        crash("parse_int_value: expected token of tt_int_literal");
+        crash("parse_int_value: expected token of tt_int_literal\n");
 
-    token t = current_token(p);
+    token* t = &current_token(p);
 
-    bool is_negative = (p->text[t.start] == '-');
+    bool is_negative = (p->text[t->start] == '-');
     
     u64 value = 0;
-    switch (p->text[t.start+is_negative]) {
+    switch (p->text[t->start+is_negative]) {
     case '0':
-
-        switch (p->text[t.start+is_negative+1]) {
+        switch (p->text[t->start+is_negative+1]) {
         case 'x':
         case 'X':
-
+            value = _parse_integer(p, t, 16, is_negative+2);
+            break;
         case 'o':
         case 'O':
+            value = _parse_integer(p, t, 8, is_negative+2);
+            break;
 
+        case 's': // seximal because its VERY FUNNY
+        case 'S':
+            value = _parse_integer(p, t, 6, is_negative+2);
+            break;
+        
         case 'b':
         case 'B':
-            TODO("(parse_int_value) bother sandwichman about other bases in literals");
-        default:
-            error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
-                "invalid base prefix \'%c\'",  p->text[t.start+is_negative+1]);
-        }
+            value = _parse_integer(p, t, 2, is_negative+2);
+            break;
+        case 'd':
+        case 'D':
+            value = _parse_integer(p, t, 10, is_negative+2);
+            break;
 
-    case '_':
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            value = _parse_integer(p, t, 10, is_negative+1);
+            break;
+
+        default:
+            error_at_position(p->path, p->text, t->start+is_negative+1, t->len,
+                "invalid base prefix \'%c\'",  p->text[t->start+is_negative+1]);
+        }
+        break;
     case '1':
     case '2':
     case '3':
@@ -166,21 +192,46 @@ u64 parse_int_value(parser* p) {
     case '6':
     case '7':
     case '8':
-    case '9': {
+    case '9':
+        value = _parse_integer(p, t, 10, is_negative);
+        break;
 
-        for (int i = 0; i < t.len-1; i++) {
-            if (p->text[t.start+is_negative + i] == '_') continue;
-
-            u64 char_value = p->text[t.start+is_negative + i] - '0';
-
-            value *= 10;
-            value += char_value;
-        }
-
-        } break;
     default:
         error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
             "invalid integer literal");
     }
     return is_negative ? -value : value;
+}
+
+bool _valid_digit(char c, u64 base) {
+    switch (base) {
+    case 2:  return valid_0b(c);
+    case 8:  return valid_0o(c);
+    case 10: return valid_0d(c);
+    case 16: return valid_0x(c);
+    default:
+        crash("_valid_digit - invalid base (%lu)", base);
+    }
+}
+
+u64 _parse_integer(parser* p, token* t, u64 base, bool scan_offset) {
+    u64 value = 0;
+    for (int i = scan_offset; i < t->len; i++) {
+
+            char c = p->text[t->start + i];
+            if (c == '_') 
+                continue;
+            
+            if (!_valid_digit(c, base))
+                error_at_position(p->path, p->text, t->start+i, 1,
+                    "invalid base %lu digit \'%c\'", base, c);
+
+            u64 char_value = c - '0';
+            if (c >= 'a' && c <= 'f') char_value = c - 'a' + 1 + 10;
+            if (c >= 'A' && c <= 'F') char_value = c - 'A' + 1 + 10;
+
+            value *= base;
+            value += char_value;
+        }
+    return value;
 }

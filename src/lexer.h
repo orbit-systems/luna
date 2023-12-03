@@ -50,6 +50,7 @@ typedef struct lexer_state_s {
 #define can_start_identifier(ch) ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_')
 #define can_start_number(ch) ((ch >= '0' && ch <= '9') || ch == '-')
 #define valid_digit(ch) ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch == '_'))
+
 #define valid_0x(ch) ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') || (ch == '_'))
 #define valid_0d(ch) ((ch >= '0' && ch <= '9') || (ch == '_'))
 #define valid_0o(ch) ((ch >= '0' && ch <= '7') || (ch == '_'))
@@ -61,11 +62,10 @@ typedef struct lexer_state_s {
 #define peek_char(lex, amnt) ((lex->cursor + amnt) < lex->text_len ? lex->text[lex->cursor + amnt] : '\0')
 void append_next_token(lexer_state* l);
 
-void print_token(lexer_state* l, token* t);
+void print_token(char* text, token* t);
 
 void lexer_init(lexer_state* lexer, char* text_path, char* text, u64 text_len);
 void append_next_token(lexer_state* l);
 
 void scan_identifier(lexer_state* l);
 void scan_int_literal(lexer_state* l);
-
