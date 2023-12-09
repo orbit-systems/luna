@@ -9,7 +9,7 @@ relocs:
     absolute    default for .symbol delcarations; symbol value does not change during relocation. a label cannot have absolute binding.
 */
 
-define a_random_symbol 0x10     // create and set symbol "a_random_symbol" to 300
+define a_random_symbol 300      // create and set symbol "a_random_symbol" to 300
 bind a_random_symbol "global"   // make the symbol visible to other object code files
 
 type this_random_function_code "function"
@@ -28,6 +28,7 @@ section "code" {
 section "data" "rwx" {
     .bind some_data "global"
     // inline directives must be prefixed with . to distinguish from instructions
+    
     some_data:
         u64     0xCAFE_F00D
 }
@@ -36,7 +37,7 @@ section "rodata" {
     a_string:
         utf8    "bruh"
     
-    align 8 // do this so 
+    align 8 // do this so the label points to the correct address
     this_random_function_pointer:
         u64     this_random_function_code
 }

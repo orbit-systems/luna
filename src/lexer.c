@@ -58,8 +58,7 @@ void append_next_token(lexer_state* l) {
                 while (level != 0) {
                     if (current_char(l) == '\0') {
                         error_at_position(l->text_path, l->text, l->cursor, 1,
-                            "unclosed block comment"
-                        );
+                            "unclosed block comment");
                     }
                     if (current_char(l) == '/' && peek_char(l, 1) == '*') {
                         advance_char_n(l,2);

@@ -8,9 +8,10 @@ typedef u8 param_type; enum {
     pt_reg,
     pt_int,
     pt_str,
-    pt_char,
-    pt_reference,
+    pt_symbol,
 };
+
+extern const char* param_type_str[];
 
 typedef struct param_s {
     union {
@@ -127,6 +128,8 @@ void parser_init(parser* p, lexer_state* l);
 void parser_start(parser* p);
 void parse_directive(parser* p, bool maybe_period);
 param parse_param(parser* p);
-u64 parse_int_value(parser* p);
+u64 parse_int_literal(parser* p);
 
 u64 _parse_integer(parser* p, token* t, u64 base, bool is_negative);
+
+extern const char* register_names[16];

@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     fclose(asm_file);
 
 
-    // lex, lex, lex!
+    // lexer more like sexer (lmao)
     lexer_state lex;
     lexer_init(&lex, flags.input_path, asm_string, strlen(asm_string));
     while (lex.tokens.base[lex.tokens.len-1].type != tt_EOF) {

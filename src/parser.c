@@ -46,12 +46,25 @@ void parse_directive(parser* p, bool maybe_period) {
             "expected directive, got %s", token_type_str[current_token(p).type]);
     
     if (tok_str_eq(p, current_token(p), "define")) {
-        advance_token(p);
-        advance_token(p);
-        printf("int literal: %li \n", (i64) parse_int_value(p));
-        
 
-        
+        advance_token(p);
+        param first_param = parse_param(p);
+        if (first_param.type != pt_symbol)
+            error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
+                "expected symbol, got %s", param_type_str[first_param.type]);
+
+
+        advance_token(p);
+        param second_param = parse_param(p);
+        if (second_param.type != pt_int)
+            error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
+                "expected integer, got %s", param_type_str[first_param.type]);
+
+        advance_token(p);
+        if (current_token(p).type != tt_newline)
+            error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
+                "expected new line, got %s", token_type_str[current_token(p).type]);
+
     } else
     if (tok_str_eq(p, current_token(p), "bind")) {
         
@@ -118,10 +131,36 @@ param parse_param(parser* p) {
 
     switch (t.type) {
     case tt_char_literal:
-    case tt_int_literal:
-    case tt_string_literal:
-    case tt_identifier:
+        TODO("parse_param - char literals");
         break;
+    case tt_int_literal:
+        par.token = p->current_token_index;
+        par.type = pt_int;
+        par.value_integer = parse_int_literal(p);
+        break;
+    case tt_string_literal:
+        TODO("parse_param - string literals");
+    case tt_identifier: {
+        // check if the identifier is a register name
+        int register_index = -1;
+        for (int i = 0; i < 16; i++) {
+            if (tok_str_eq(p, t, register_names[i])) {
+                register_index = i;
+                break;
+            }
+        }
+        if (register_index != -1) {
+            par.token = p->current_token_index;
+            par.type = pt_reg;
+            par.value_register = register_index;
+            break;
+        }
+
+        // this is definitely a symbol!
+        par.token = p->current_token_index;
+        par.type = pt_symbol;
+        par.symbol_index = get_or_add_symbol(p, &p->text[t.start], t.len);
+        } break;
     default:
         error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
             "expected parameter, got %s",  token_type_str[current_token(p).type]);
@@ -131,7 +170,7 @@ param parse_param(parser* p) {
 }
 
 // parse an integer literal
-u64 parse_int_value(parser* p) {
+u64 parse_int_literal(parser* p) {
     if (current_token(p).type != tt_int_literal)
         crash("parse_int_value: expected token of tt_int_literal\n");
 
@@ -151,12 +190,10 @@ u64 parse_int_value(parser* p) {
         case 'O':
             value = _parse_integer(p, t, 8, is_negative+2);
             break;
-
-        case 's': // seximal because its VERY FUNNY
+        case 's': // seximal support because funny
         case 'S':
             value = _parse_integer(p, t, 6, is_negative+2);
             break;
-        
         case 'b':
         case 'B':
             value = _parse_integer(p, t, 2, is_negative+2);
@@ -165,43 +202,31 @@ u64 parse_int_value(parser* p) {
         case 'D':
             value = _parse_integer(p, t, 10, is_negative+2);
             break;
-
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
             value = _parse_integer(p, t, 10, is_negative+1);
             break;
-
         default:
             error_at_position(p->path, p->text, t->start+is_negative+1, t->len,
                 "invalid base prefix \'%c\'",  p->text[t->start+is_negative+1]);
         }
         break;
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
+
+    case '1': case '2': case '3': case '4': case '5':
+    case '6': case '7': case '8': case '9':
         value = _parse_integer(p, t, 10, is_negative);
         break;
 
     default:
-        error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
-            "invalid integer literal");
+        // error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
+        //     "invalid integer literal");
+        crash("non-integer-literal was categorized as integer literal\n");
     }
     return is_negative ? -value : value;
 }
+
+
+
 
 bool _valid_digit(char c, u64 base) {
     switch (base) {
@@ -217,8 +242,8 @@ bool _valid_digit(char c, u64 base) {
 u64 _parse_integer(parser* p, token* t, u64 base, bool scan_offset) {
     u64 value = 0;
     for (int i = scan_offset; i < t->len; i++) {
-
             char c = p->text[t->start + i];
+
             if (c == '_') 
                 continue;
             
@@ -235,3 +260,31 @@ u64 _parse_integer(parser* p, token* t, u64 base, bool scan_offset) {
         }
     return value;
 }
+
+
+const char* register_names[] = {
+    "rz",
+    "ra",
+    "rb",
+    "rc",
+    "rd",
+    "re",
+    "rf",
+    "rg",
+    "rh",
+    "ri",
+    "rj",
+    "rk",
+    "pc",
+    "sp",
+    "fp",
+    "st",
+};
+
+const char* param_type_str[] = {
+    "undefined",
+    "register",
+    "integer literal",
+    "string literal",
+    "symbol name"
+};
