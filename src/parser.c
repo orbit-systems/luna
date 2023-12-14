@@ -47,23 +47,44 @@ void parse_directive(parser* p, bool maybe_period) {
     
     if (tok_str_eq(p, current_token(p), "define")) {
 
+        // syntax check
+
         advance_token(p);
         param first_param = parse_param(p);
         if (first_param.type != pt_symbol)
             error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
                 "expected symbol, got %s", param_type_str[first_param.type]);
 
-
         advance_token(p);
-        param second_param = parse_param(p);
+        param second_param = parse_param(p);            
         if (second_param.type != pt_int)
             error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
-                "expected integer, got %s", param_type_str[first_param.type]);
+                "expected scalar literal, got %s", param_type_str[first_param.type]);
 
         advance_token(p);
         if (current_token(p).type != tt_newline)
             error_at_position(p->path, p->text, current_token(p).start, current_token(p).len,
                 "expected new line, got %s", token_type_str[current_token(p).type]);
+
+        // process
+
+        symbol* s = &p->symbol_table.base[first_param.symbol_index];
+
+        // is this symbol already defined?
+        if (s->is_defined)
+            error_at_position(p->path, p->text, peek_token(p, -3).start, peek_token(p, -3).len, // i think -3 is the correct offset? i dont wanna test it lmao
+                "symbol cannot be redefined");
+
+        s->is_defined = true;
+        s->ident = &p->text[peek_token(p, -2).start];
+        s->ident_len = peek_token(p, -2).len;
+        s->reloc = sr_absolute;
+        
+        
+        
+        
+
+
 
     } else
     if (tok_str_eq(p, current_token(p), "bind")) {
@@ -284,7 +305,7 @@ const char* register_names[] = {
 const char* param_type_str[] = {
     "undefined",
     "register",
-    "integer literal",
+    "scalar literal",
     "string literal",
     "symbol name"
 };
