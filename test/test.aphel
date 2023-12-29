@@ -10,6 +10,7 @@ relocs:
 */
 
 define a_random_symbol 300      // create and set symbol "a_random_symbol" to 300
+define a_random_symbol 300      // create and set symbol "a_random_symbol" to 300
 bind a_random_symbol "global"   // make the symbol visible to other object code files
 
 type this_random_function_code "function"
@@ -50,6 +51,10 @@ blank "bss" {
         u32     23201       // error - non-zero values are not allowed in blank sections
         u64     a_string    // error - symbol references are not allowed in blank sections
 }
+
+
+// an info section is metadata about the object file or anything in it.
+// it can store arbitrary data, as long as it is encodable as a pair of strings.
 
 info {
     "arbitrary" = "pairs",

@@ -32,6 +32,8 @@ void parser_start(parser* p) {
 
     skip_newlines(p);
     parse_directive(p, true);
+    skip_newlines(p);
+    parse_directive(p, true);
     
 }
 
@@ -68,8 +70,8 @@ void parse_directive(parser* p, bool maybe_period) {
 
         // process
 
-        symbol* s = &p->symbol_table.base[first_param.symbol_index];
-
+        symbol* s = &(p->symbol_table.base[first_param.symbol_index]);
+        
         // is this symbol already defined?
         if (s->is_defined)
             error_at_position(p->path, p->text, peek_token(p, -3).start, peek_token(p, -3).len, // i think -3 is the correct offset? i dont wanna test it lmao
@@ -115,7 +117,7 @@ void parse_directive(parser* p, bool maybe_period) {
 u64 get_symbol(parser* p, char* ident, u16 ident_len) {
     for (int i = 0; i < p->symbol_table.len; i++) {
         // stupid bounded string equality
-        if (p->symbol_table.base[i].ident_len == ident_len && strncmp(p->symbol_table.base[i].ident, ident, ident_len))
+        if (p->symbol_table.base[i].ident_len == ident_len && strncmp(p->symbol_table.base[i].ident, ident, ident_len) == 0)
             return i;
         
     }
