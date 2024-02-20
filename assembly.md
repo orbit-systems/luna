@@ -1,5 +1,24 @@
 NOTE: Parenthesis `()` indicates a required argument. brackets `[]` indicate an optional argument.
 
+# labels
+
+labels are defined like so:
+
+`label:`
+
+the label must have a newline after it.
+if the label is prefixed with `.`, it is a local label. it will internally be prefixed with with the name of the last non-local label. for example:
+
+```as
+some_function:
+    li ra, 0
+    .loop:          ; internally "some_function.loop:"
+        add ra, ra, 1
+        cmp ra, 10
+        bne .loop;  ; internally "bne some_function.loop"
+    ret
+```
+
 # directives
 
 ## symbol data

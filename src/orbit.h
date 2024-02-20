@@ -299,7 +299,7 @@ void printstr(string str) {
 // god this thing is a mess but it works ig
 
 #ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS
+#   define _CRT_SECURE_NO_WARNINGS
 #endif
 
 #include <stdlib.h>
@@ -308,25 +308,29 @@ void printstr(string str) {
 #include <stdio.h>
 #include <sys/stat.h>
 #ifdef _WIN32
-#define VC_EXTRALEAN
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <direct.h>
+#   define VC_EXTRALEAN
+#   define WIN32_LEAN_AND_MEAN
+#   include <windows.h>
+#   include <direct.h>
 
-#define __S_ISTYPE(mode, mask)  (((mode) & S_IFMT) == (mask))
-#undef S_ISREG
-#undef S_ISDIR
-#define S_ISREG(mode)    __S_ISTYPE((mode), S_IFREG)
-#define S_ISDIR(mode)    __S_ISTYPE((mode), S_IFDIR)
+#   define __S_ISTYPE(mode, mask)  (((mode) & S_IFMT) == (mask))
+#   undef S_ISREG
+#   undef S_ISDIR
+#   define S_ISREG(mode)    __S_ISTYPE((mode), S_IFREG)
+#   define S_ISDIR(mode)    __S_ISTYPE((mode), S_IFDIR)
 
-#define fs_mkdir _mkdir
-#define chdir _chdir
-#define PATH_MAX 260
+#   define fs_mkdir _mkdir
+#   define chdir _chdir
+#   define PATH_MAX 260
 #else
-#include <dirent.h>
-#include <unistd.h>
+#   include <dirent.h>
+#   include <unistd.h>
 
-#define fs_mkdir mkdir
+#   define fs_mkdir mkdir
+#endif
+
+#ifndef PATH_MAX
+#   define PATH_MAX 260
 #endif
 
 typedef u8 fs_file_type; enum {
