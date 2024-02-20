@@ -24,10 +24,8 @@
     TOKEN(tt_colon,     ":") \
     TOKEN(tt_colon_colon, "::") \
     TOKEN(tt_semicolon, ";") \
-    TOKEN(tt_period,    ".") \
-    TOKEN(tt_range_less,"..<") \
-    TOKEN(tt_range_eq,  "..=") \
     TOKEN(tt_comma,     ",") \
+    TOKEN(tt_period,     ".") \
     TOKEN(ttam,         "!") \
     TOKEN(tt_carat,     "^") \
     TOKEN(tt_at,        "@") \

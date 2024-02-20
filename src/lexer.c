@@ -4,8 +4,8 @@
 
 // pretty much wholesale copied from the mars repo
 
-#define can_start_identifier(ch) ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_')
-#define can_be_in_identifier(ch) ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_')
+#define can_start_identifier(ch) ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_'|| '.')
+#define can_be_in_identifier(ch) ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' || ch == '.')
 #define can_start_number(ch) ((ch >= '0' && ch <= '9'))
 #define valid_digit(ch) ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch == '_'))
 
@@ -69,10 +69,12 @@ void append_next_token(lexer* restrict lex) {
         switch (current_char(lex)) {
         case ' ':
         case '\t':
-        case '\n':
         case '\r':
         case '\v':
             advance_char(lex);
+            break;
+        case ';':
+            skip_until_char(lex, '\n');
             break;
         case '/':
             if (peek_char(lex, 1) == '/') {
@@ -105,6 +107,9 @@ void append_next_token(lexer* restrict lex) {
     token_type this_type;
     if (can_start_identifier(current_char(lex))) {
         this_type = scan_ident_or_keyword(lex);
+    } else if (current_char(lex) == '\n') {
+        this_type = tt_newline;
+        advance_char(lex);
     } else if (can_start_number(current_char(lex))) {
         this_type = scan_number(lex);
     } else if (current_char(lex) == '\"' || current_char(lex) == '\'') {
@@ -125,6 +130,8 @@ token_type scan_ident_or_keyword(lexer* restrict lex) {
     advance_char(lex);
     while (can_be_in_identifier(current_char(lex))) 
         advance_char(lex);
+
+    if (string_eq(substring(lex->src, beginning, lex->cursor), to_string("wow"))) return tt_period;
 
     return tt_identifier;
 }
@@ -318,22 +325,6 @@ token_type scan_operator(lexer* restrict lex) {
             return tt_colon_colon;
         }
         return tt_colon;
-    case '.':
-        advance_char(lex);
-        if (current_char(lex) == '.') {
-            if (peek_char(lex, 1) == '<') {
-                advance_char_n(lex, 2);
-                return tt_range_less;
-            }
-            if (peek_char(lex, 1) == '=') {
-                advance_char_n(lex, 2);
-                return tt_range_eq;
-            }
-        } else if (valid_0d(current_char(lex))) {
-            advance_char_n(lex, -2);
-            return scan_number(lex);
-        }
-        return tt_period;
 
     case '#': advance_char(lex); return tt_hash;
     case ';': advance_char(lex); return tt_semicolon;
