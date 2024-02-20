@@ -10,7 +10,7 @@ NOTE: Parenthesis `()` indicates a required argument. brackets `[]` indicate an 
 
 in addition to ISA-defined pseudo-instructions/aliases, these are supplied:
 
-- `loc (int), [fill]` - skip forward 
+- `loc (int), [fill]` - skip forward until address `(int)`, filling the empty space will `[fill]`.
 
 - `align (int), [fill]` - insert byte `[fill]`(defaults to 0) until the cursor position is aligned to a multiple of `(int)`. A warning will be generated if the argument is not a power of two. Real instructions are automatically aligned to multiples of 4.
 
