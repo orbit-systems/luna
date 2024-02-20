@@ -3,7 +3,8 @@ SRC = $(wildcard $(SRCPATHS))
 OBJECTS = $(SRC:src/%.c=build/%.o)
 
 NAME = luna
-CC = clang
+CC = gcc
+LD = gcc
 
 ifeq ($(OS),Windows_NT)
 	EXECUTABLE_NAME = $(NAME).exe
@@ -22,20 +23,24 @@ SHUTTHEFUCKUP = -Wno-unknown-warning-option -Wno-incompatible-pointer-types-disc
 #e.g if comet.h changes, it forces a rebuild
 #if core.c changes, it only rebuilds.
 
+all: build
+
 build/%.o: src/%.c
-	$(CC) -c -o $@ $< $(CFLAGS) -MD $(SHUTTHEFUCKUP)
+	@echo compiling $<
+	@$(CC) -c -o $@ $< $(CFLAGS) -MD
 
 build: $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(EXECUTABLE_NAME) $(CFLAGS) -MD
-	@echo ""
-
-test: build
-	./$(EXECUTABLE_NAME) test/test.aphel -o:test/out.apo
-
-debug:
-	$(DEBUGFLAGS) $(DONTBEAFUCKINGIDIOT)
-
+	@echo linking with $(LD)
+	@$(CC) $(OBJECTS) -o $(EXECUTABLE_NAME) -lc -lm -MD
+	@echo $(EXECUTABLE_NAME) built
+	
 clean:
-	rm -f build/*
+	@rm -rf build
+	@mkdir build
+
+printbuildinfo:
+	@echo using $(CC) with flags $(CFLAGS)
+
+new: clean printbuildinfo build
 
 -include $(OBJECTS:.o=.d)
