@@ -4,7 +4,7 @@
 
 // pretty much wholesale copied from the mars repo
 
-#define can_start_identifier(ch) ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_'|| '.')
+#define can_start_identifier(ch) ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || ch == '.')
 #define can_be_in_identifier(ch) ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' || ch == '.')
 #define can_start_number(ch) ((ch >= '0' && ch <= '9'))
 #define valid_digit(ch) ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch == '_'))
@@ -376,7 +376,7 @@ void skip_until_char(lexer* restrict lex, char c) {
 void skip_whitespace(lexer* restrict lex) {
     while (true) {
         char r = current_char(lex);
-        if ((r != ' ' && r != '\t' && r != '\n' && r != '\r' && r != '\v') || lex->cursor >= lex->src.len) {
+        if ((r != ' ' && r != '\t' && r != '\r' && r != '\v') || lex->cursor >= lex->src.len) {
             return;
         }
         advance_char(lex);
