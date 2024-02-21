@@ -1,11 +1,10 @@
+
+
 define OUT_PORT, 10
 
 __entry__:
 IVT:
     bra start
-
-
-
 
 
 loc 2048
@@ -25,11 +24,11 @@ start:
     ; IVT filled
 
     ; set up stack
-    li fp, stack
-    li sp, stack
-    li ra, 1234
+    li   fp, stack
+    li   sp, stack
+    li   ra, 1234
     push ra
-    li ra, 0
+    li   ra, 0
     pop  ra
 
     li ra, setup_passed_text
@@ -76,3 +75,7 @@ setup_passed_text:
 
 loc 0x1FFFF
 stack:
+
+li ra, 0.1h
+li ra, 0.1f
+li ra, 0.1d

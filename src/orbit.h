@@ -11,6 +11,7 @@
 #include <stdarg.h>
 #include <sys/time.h>
 #include <stdatomic.h>
+#include <stdalign.h>
 #include <assert.h>
 
 typedef uint64_t u64;
@@ -25,6 +26,8 @@ typedef int8_t   i8;
 typedef double f64;
 typedef float f32;
 typedef _Float16 f16;
+
+#define null NULL
 
 // #if defined(__clang__)
 //     typedef __fp16 f16;

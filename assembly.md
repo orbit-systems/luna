@@ -1,5 +1,14 @@
 NOTE: Parenthesis `()` indicates a required argument. brackets `[]` indicate an optional argument.
 
+# values
+
+there are several types of literals:
+
+- standard int literals, like `10`.
+- floating point literals, like `10.0f`. They must be postfixed with `h`, `f`, or `d` for half-, single-, and double-precision literals.
+- character literals, like `'A'`. Their value is the ASCII value of the character. common escape sequences are supported.
+- string literals, like `"Hello"`. They can only be used with directives or pseudo-instructions that accept them.
+
 # labels
 
 labels are defined like so:
@@ -46,7 +55,3 @@ in addition to ISA-defined pseudo-instructions/aliases, these are supplied:
 - `skip (int)` - equivalent to `u8 0, (int)`.
 
 - `utf8 (string)` - Inserts a UTF-8 encoded string. Does not automatically null-terminate.
-
-- `utf16 (string)` - Inserts a UTF-16 encoded string. Does not automatically null-terminate.
-
-- `utf32 (string)` - Inserts a UTF-32 encoded string. Does not automatically null-terminate.

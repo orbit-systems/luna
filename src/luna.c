@@ -8,6 +8,7 @@
 #define ORBIT_IMPLEMENTATION
 #include "luna.h"
 #include "lexer.h"
+#include "parser.h"
 
 flag_set luna_flags;
 
@@ -34,10 +35,11 @@ int main(int argc, char** argv) {
 
     lexer input_lexer = new_lexer(luna_flags.input_path, input_text);
     construct_token_buffer(&input_lexer);
-    FOR_RANGE(i, 0, input_lexer.buffer.len) {
-        printf("["str_fmt"] ", str_arg(input_lexer.buffer.at[i].text));
-    }
+    // FOR_RANGE(i, 0, input_lexer.buffer.len) {
+    //     printf("["str_fmt", %s] \n", str_arg(input_lexer.buffer.at[i].text), token_type_str[input_lexer.buffer.at[i].type]);
+    // }
 
+    return can_losslessly_zeroext(-1, 10);
 }
 
 
