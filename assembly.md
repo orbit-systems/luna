@@ -3,9 +3,9 @@ NOTE: Parenthesis `()` indicates a required argument. brackets `[]` indicate an 
 # labels
 
 labels are defined like so:
-
-`label:`
-
+```nasm
+label:
+```
 the label must have a newline after it.
 if the label is prefixed with `.`, it is a local label. it will internally be prefixed with with the name of the last non-local label. for example:
 
