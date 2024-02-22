@@ -131,7 +131,25 @@ token_type scan_ident_or_keyword(lexer* restrict lex) {
     while (can_be_in_identifier(current_char(lex))) 
         advance_char(lex);
 
-    if (string_eq(substring(lex->src, beginning, lex->cursor), to_string("wow"))) return tt_period;
+    string word = substring(lex->src, beginning, lex->cursor);
+
+    if (string_eq(word, to_string("."))) return tt_period;
+
+    if (string_eq(word, to_string("ra"))) return tt_register_ra;
+    if (string_eq(word, to_string("rb"))) return tt_register_rb;
+    if (string_eq(word, to_string("rc"))) return tt_register_rc;
+    if (string_eq(word, to_string("rd"))) return tt_register_rd;
+    if (string_eq(word, to_string("re"))) return tt_register_re;
+    if (string_eq(word, to_string("rf"))) return tt_register_rf;
+    if (string_eq(word, to_string("rg"))) return tt_register_rg;
+    if (string_eq(word, to_string("rh"))) return tt_register_rh;
+    if (string_eq(word, to_string("ri"))) return tt_register_ri;
+    if (string_eq(word, to_string("rj"))) return tt_register_rj;
+    if (string_eq(word, to_string("rk"))) return tt_register_rk;
+    if (string_eq(word, to_string("ip"))) return tt_register_ip;
+    if (string_eq(word, to_string("sp"))) return tt_register_sp;
+    if (string_eq(word, to_string("fp"))) return tt_register_fp;
+    if (string_eq(word, to_string("st"))) return tt_register_st;
 
     return tt_identifier;
 }

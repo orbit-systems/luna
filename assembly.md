@@ -36,22 +36,22 @@ some_function:
 
 # pseudo-instructions
 
-in addition to ISA-defined pseudo-instructions/aliases, these are supplied:
+In addition to ISA-defined pseudo-instructions, these are supplied:
 
 - `loc (int), [fill]` - skip forward until address `(int)`, filling the empty space will `[fill]`.
 
-- `align (int), [fill]` - insert byte `[fill]`(defaults to 0) until the cursor position is aligned to a multiple of `(int)`. A warning will be generated if the argument is not a power of two. Real instructions are automatically aligned to multiples of 4.
+- `align (int), [fill]` - Insert byte `[fill]`(defaults to 0) until the cursor position is aligned to a multiple of `(int)`. A warning will be generated if the argument is not a power of two. Real instructions are automatically aligned to multiples of 4.
 
-- `byte (int), [count]` - alias for `u8`
+- `byte (val), [count]` - Alias for `d8`
 
-- `d8 (int), [count]` - Repeat a u8 value `(int)`, `[count]`(default to 1) # of times.
+- `d8 (val), [count]` - Repeat an 8-bit value `(val)`, `[count]`(default to 1) # of times.
 
-- `d16 (int), [count]` - Repeat an i16 value `(int)`, `[count]`(default to 1) # of times. Automatically aligned to multiple of 2.
+- `d16 (val), [count]` - Repeat a 16-bit value `(val)`, `[count]`(default to 1) # of times. Automatically aligned to multiple of 2.
 
-- `d32 (int), [count]` - Repeat a 32-bit value `(int)`, `[count]`(default to 1) # of times. Automatically aligned to multiple of 4.
+- `d32 (val), [count]` - Repeat a 32-bit value `(val)`, `[count]`(default to 1) # of times. Automatically aligned to multiple of 4.
 
-- `d64 (int), [count]` - Repeat a 64-bit value `(int)`, `[count]`(default to 1) # of times. Automatically aligned to multiple of 8.
+- `d64 (val), [count]` - Repeat a 64-bit value `(val)`, `[count]`(default to 1) # of times. Automatically aligned to multiple of 8.
 
-- `skip (int)` - equivalent to `u8 0, (int)`.
+- `skip (val)` - equivalent to `d8 0, (val)`.
 
 - `utf8 (string)` - Inserts a UTF-8 encoded string. Does not automatically null-terminate.

@@ -9,6 +9,7 @@
 typedef struct symbol {
     string name;
     u64 value;
+    bool defined;
 } symbol;
 da_typedef(symbol);
 
@@ -43,7 +44,6 @@ typedef u8 element_kind; enum {
     ek_invalid,
     ek_label,
     ek_instruction,
-    ek_pseudoinstruction,
 };
 
 typedef struct element {
@@ -55,32 +55,43 @@ typedef struct element {
         } label;
         struct {
             da(argument) args;
-            u64 size;
+            u8 opcode;
+            u8 func;
+            u8 format;
         } instr;
     };
     element_kind kind;
 } element;
 
-da_typedef(element);
+typedef struct {
+    element ** at;
+    size_t len;
+    size_t cap;
+} element_list;
 
 typedef struct luna_file {
     string path;
     string text;
     da(token)   tokens;
     da(symbol)  symtab;
-    da(element) assembly;
+    element_list instrs;
 
     u64 current_tok;
     symbol* last_nonlocal;
+    
+    arena str_alloca;
+    arena elem_alloca;
 } luna_file;
 
-void parse_file(luna_file* f);
+void parse_file(luna_file* restrict f);
+
+i64 parse_regular_literal(luna_file* restrict f);
 
 element* new_element(arena* restrict alloca, element_kind kind);
 
 symbol* symbol_find(string name, da(symbol)* restrict symtable);
 symbol* symbol_find_or_create(string name, da(symbol)* restrict symtable);
-void    symbol_expandname(symbol* restrict sym, symbol* restrict last_nonlocal, arena* restrict alloca);
+void expandlocalname(string* restrict sym, symbol* restrict last_nonlocal, arena* restrict alloca);
 
 #define sign_extend(val, bitsize) ((u64)((i64)((u64)val << (64-bitsize)) >> (64-bitsize)))
 #define zero_extend(val, bitsize) ((u64)((u64)((u64)val << (64-bitsize)) >> (64-bitsize)))

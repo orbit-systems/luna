@@ -30,6 +30,14 @@ typedef u8 aphel_fmt; enum {
     fmt_B,
 };
 
+typedef u8 aphel_imm; enum {
+    imm_none,
+    imm_interrupt,
+    imm_signext,
+    imm_zeroext,
+    imm_branch,
+};
+
 // name, opcode, func, format
 #define INSTRUCTION_LIST \
     INSTR("int",   0x01, 0, fmt_F) \
@@ -137,7 +145,8 @@ typedef u8 aphel_fmt; enum {
     INSTR("fmax",  0x4c, 0, fmt_E) \
     INSTR("fsat",  0x4d, 0, fmt_E) \
     INSTR("fcnv",  0x4e, 0, fmt_E) \
-    INSTR("fnan",  0x4f, 0, fmt_E)
+    INSTR("fnan",  0x4f, 0, fmt_E) \
+
 
 typedef union {
     u8 opcode;

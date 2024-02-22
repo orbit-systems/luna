@@ -78,7 +78,25 @@
     TOKEN(tt_open_bracket,  "[") \
     TOKEN(tt_close_bracket, "]") \
 \
+    TOKEN(tt_register_rz, "rz") \
+    TOKEN(tt_register_ra, "ra") \
+    TOKEN(tt_register_rb, "rb") \
+    TOKEN(tt_register_rc, "rc") \
+    TOKEN(tt_register_rd, "rd") \
+    TOKEN(tt_register_re, "re") \
+    TOKEN(tt_register_rf, "rf") \
+    TOKEN(tt_register_rg, "rg") \
+    TOKEN(tt_register_rh, "rh") \
+    TOKEN(tt_register_ri, "ri") \
+    TOKEN(tt_register_rj, "rj") \
+    TOKEN(tt_register_rk, "rk") \
+    TOKEN(tt_register_ip, "rp") \
+    TOKEN(tt_register_sp, "sp") \
+    TOKEN(tt_register_fp, "fp") \
+    TOKEN(tt_register_st, "st") \
+\
     TOKEN(tt_meta_COUNT, "") \
+
 
 typedef u8 token_type; enum {
 #define TOKEN(enum, str) enum,

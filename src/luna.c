@@ -15,8 +15,6 @@ flag_set luna_flags;
 int main(int argc, char** argv) {
     load_arguments(argc, argv, &luna_flags);
 
-    // printf("in: "str_fmt"\nout: "str_fmt"\n", str_arg(luna_flags.input_path), str_arg(luna_flags.output_path));
-
     if (!fs_exists(luna_flags.input_path)) {
         general_error("cannot find file \""str_fmt"\"", str_arg(luna_flags.input_path));
     }
@@ -41,9 +39,28 @@ int main(int argc, char** argv) {
     source.path = input_lexer.path;
     source.tokens = input_lexer.buffer;
     da_init(&source.symtab, 16);
-    da_init(&source.assembly, 16);
+    da_init(&source.instrs, 16);
+    source.elem_alloca = arena_make(0x4000);
+    source.str_alloca  = arena_make(0x1000);
+
+    printf("%zu size\n", sizeof(element));
 
     parse_file(&source);
+
+    printf("SYMBOL TABLE\n");
+    u64 max_sym_len = source.symtab.at[0].name.len;
+    FOR_URANGE(i, 1, source.symtab.len) {
+        max_sym_len = max(max_sym_len, source.symtab.at[i].name.len);
+    }
+    FOR_URANGE(i, 0, source.symtab.len) {
+        printf("    "str_fmt, str_arg(source.symtab.at[i].name));
+
+        FOR_URANGE(j, 0, max_sym_len - source.symtab.at[i].name.len + 4) putchar(' ');
+
+        printf("%s  %16lx\n",
+            source.symtab.at[i].defined ? "def  " : "undef", source.symtab.at[i].value
+        );
+    }
 }
 
 

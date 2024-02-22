@@ -1,4 +1,5 @@
-define OUT_PORT, 10
+
+define OUT_PORT, 10.0d
 
 __entry__:
 IVT:
@@ -29,7 +30,7 @@ start:
     li   ra, 0
     pop  ra
 
-    li ra, setup_passed_text
+    li   ra, setup_passed_text
     call rb, print_cstring
 
     .spin:
@@ -37,14 +38,14 @@ start:
 
 
 setup_failed:
-    li ra, setup_failed_text
+    li   ra, setup_failed_text
     call rb, print_cstring
     .spin:
         bra .spin
 
 interrupt_handler:
 
-    li ra, interrupt_handler_text
+    li   ra, interrupt_handler_text
     call rb, print_cstring
 
     .spin:
@@ -59,7 +60,7 @@ print_cstring: ; (charptr: ra) -> (ra)
         out OUT_PORT, rb
         add ra, ra, 1
         bra .loop
-    pop rb
+    pop  rb
     ret
 
     
@@ -68,7 +69,7 @@ interrupt_handler_text:
     utf8 "[interrupt]\n\0"
 setup_failed_text:
     utf8 "setup failed\n\0"
-setup_passed_text:
+hello_world_text:
     utf8 "Hello world!\n\0"
 
 loc 0x1FFFF
