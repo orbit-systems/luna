@@ -73,6 +73,7 @@ typedef struct element {
         } label;
         struct {
             da(argument) args;
+            u64 size;
         } instr;
     };
     element_kind kind;

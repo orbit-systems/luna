@@ -1,5 +1,3 @@
-
-
 define OUT_PORT, 10
 
 __entry__:
@@ -16,11 +14,11 @@ start:
 
     li ra, IVT
     li rb, interrupt_handler
-    fill_int_handlers_loop:
+    .fill_IVT:
         sw  ra, 0, rb
         add ra, ra, 8
         cmp ra, 2048
-        blt fill_int_handlers_loop
+        blt .fill_IVT
     ; IVT filled
 
     ; set up stack
