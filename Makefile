@@ -31,7 +31,7 @@ build/%.o: src/%.c
 
 build: $(OBJECTS)
 	@echo linking with $(LD)
-	@$(CC) $(OBJECTS) -o $(EXECUTABLE_NAME) -lc -lm -MD
+	@$(CC) $(OBJECTS) -o $(EXECUTABLE_NAME) -MD
 	@echo $(EXECUTABLE_NAME) built
 	
 clean:

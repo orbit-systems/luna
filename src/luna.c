@@ -35,9 +35,15 @@ int main(int argc, char** argv) {
 
     lexer input_lexer = new_lexer(luna_flags.input_path, input_text);
     construct_token_buffer(&input_lexer);
-    FOR_RANGE(i, 0, input_lexer.buffer.len) {
-        printf(str_fmt" ", str_arg(input_lexer.buffer.at[i].text));
-    }
+
+    luna_file source = {0};
+    source.text = input_lexer.src;
+    source.path = input_lexer.path;
+    source.tokens = input_lexer.buffer;
+    da_init(&source.symtab, 16);
+    da_init(&source.assembly, 16);
+
+    parse_file(&source);
 }
 
 

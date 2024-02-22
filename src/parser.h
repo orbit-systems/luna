@@ -4,31 +4,13 @@
 #include "orbit.h"
 #include "lexer.h"
 #include "arena.h"
+#include "aphel.h"
 
 typedef struct symbol {
     string name;
     u64 value;
 } symbol;
 da_typedef(symbol);
-
-typedef u8 aphel_reg; enum {
-    r_rz = 0,
-    r_ra = 1,
-    r_rb = 2,
-    r_rc = 3,
-    r_rd = 4,
-    r_re = 5,
-    r_rf = 6,
-    r_rg = 7,
-    r_rh = 8,
-    r_ri = 9,
-    r_rj = 10,
-    r_rk = 11,
-    r_ip = 12,
-    r_sp = 13,
-    r_fp = 14,
-    r_st = 15,
-};
 
 typedef u8 argument_kind; enum {
     ak_invalid,
@@ -78,6 +60,21 @@ typedef struct element {
     };
     element_kind kind;
 } element;
+
+da_typedef(element);
+
+typedef struct luna_file {
+    string path;
+    string text;
+    da(token)   tokens;
+    da(symbol)  symtab;
+    da(element) assembly;
+
+    u64 current_tok;
+    symbol* last_nonlocal;
+} luna_file;
+
+void parse_file(luna_file* f);
 
 element* new_element(arena* restrict alloca, element_kind kind);
 

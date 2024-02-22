@@ -1,9 +1,41 @@
 #include "parser.h"
+#include "term.h"
+
+#define current_token (f->tokens.at[f->current_tok])
+#define advance_token (f->current_tok++)
+#define error_at_token(p, token, message, ...) \
+    error_at_string((p)->path, (p)->text, (token).text, \
+    message __VA_OPT__(,) __VA_ARGS__)
+
+#define current_eq(cstr) (string_eq(current_token.text, to_string(cstr)))
+
+void parse_file(luna_file* f) {
+    while (current_token.type != tt_EOF) {
+        if (current_token.type == tt_newline) {
+            advance_token;
+            continue;
+        }
+
+        if (current_token.type != tt_identifier)
+            error_at_token(f, current_token, "expected directive or instruction");
+
+        // weed out some directives
+        
+        if current_eq("define") {
+            advance_token;
+
+            if (current_token.type != tt_identifier)
+                error_at_token(f, current_token, "expected symbol name");
+            
+            advance_token;
+
+        }
+    }
+}
 
 element* new_element(arena* restrict alloca, element_kind kind) {
     element* e = arena_alloc(alloca, sizeof(element), alignof(element));
-    *e = (element){};
-    e->kind = kind;
+    *e = (element){.kind = kind};
     return e;
 }
 
@@ -23,7 +55,7 @@ symbol* symbol_find_or_create(string name, da(symbol)* restrict symtable) {
     return sym;
 }
 
-// modify symbol with real expanded name
+// modify symbol with real symbol name
 void symbol_expandname(symbol* restrict sym, symbol* restrict last_nonlocal, arena* restrict alloca) {
     if (sym->name.raw[0] != '.') return;
     string newname;
