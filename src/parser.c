@@ -69,7 +69,7 @@ void parse_file(luna_file* restrict f) {
                 if (f->last_nonlocal == NULL)
                     error_at_token(f, current_token, "local label requires a previous non-local label");   
                 string symname = current_token.text;
-                expandlocalname(&symname, f->last_nonlocal, &f->str_alloca);
+                expand_local_sym(&symname, f->last_nonlocal, &f->str_alloca);
                 symbol* s = symbol_find_or_create(symname, &f->symtab);
                 s->defined = true;
                 e->label.symbol = s;
@@ -79,30 +79,98 @@ void parse_file(luna_file* restrict f) {
             da_append(&f->instrs, e);
             continue;
         }
+        // some pseudoinstructions
+        if current_eq("loc") {
+            element* e = new_element(&f->elem_alloca, ek_pseudoinstruction);
+            e->start = &current_token;
+            e->pseudo.code = aphel_p_loc;
 
-        // maybe ill make this a hash table or something, but its manual for now
+            advance_token;
+            if (current_token.type != current_token.type == tt_literal_int)
+                error_at_token(f, current_token, "'loc' must take an integer literal");
+            
+            e->pseudo.args[0] = (argument){.kind = ak_literal, .as_literal = parse_regular_literal(f)};
+
+            advance_token;
+            if (current_token.type != tt_newline)
+                error_at_token(f, current_token, "expected new line");
+            advance_token;
+            e->end = &peek_token(-1);
+            da_append(&f->instrs, e);
+            continue;
+        }
+        if current_eq("align") {
+            element* e = new_element(&f->elem_alloca, ek_pseudoinstruction);
+            e->start = &current_token;
+            e->pseudo.code = aphel_p_align;
+
+            advance_token;
+            if (current_token.type != current_token.type == tt_literal_int)
+                error_at_token(f, current_token, "'align' must take an integer literal");
+            
+            e->pseudo.args[0] = (argument){.kind = ak_literal, .as_literal = parse_regular_literal(f)};
+
+            advance_token;
+            if (current_token.type != tt_newline)
+                error_at_token(f, current_token, "expected new line");
+            advance_token;
+            e->end = &peek_token(-1);
+            da_append(&f->instrs, e);
+            continue;
+        }
+
         if (current_token.type == tt_identifier) {
             element* e = new_element(&f->elem_alloca, ek_instruction);
-            e->instr.opcode = 0;
+            e->instr.code = 0;
             e->start = &current_token;
 
             // this is fucking crazy lmao
-#           define INSTR(name_, opcode_, func_, format_) if current_eq(name_) {e->instr.opcode = opcode_; e->instr.func = func_; e->instr.format = format_;}
+#           define INSTR(name_, namestr_, opcode_, func_, format_) if current_eq(namestr_) e->instr.code = aphel_##name_;
                 INSTRUCTION_LIST
 #           undef INSTR
             
-            if (e->instr.opcode == 0)
+            if (e->instr.code == 0)
                 error_at_token(f, current_token, "unknown instruction");
 
             advance_token;
             da_init(&e->instr.args, 3);
             while (current_token.type != tt_newline) {
+                if (current_token.type >= tt_register_rz && current_token.type <= tt_register_st) {
+                    da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = (current_token.type - tt_register_rz)}));
+                } else 
+                if (current_token.type == tt_literal_char || current_token.type == tt_literal_int || current_token.type == tt_literal_float) {
+                    da_append(&e->instr.args, ((argument){.kind = ak_literal, .as_literal = parse_regular_literal(f)}));
+                } else 
+                if (current_token.type == tt_literal_string) {
+                    da_append(&e->instr.args, ((argument){.kind = ak_str, .as_str = string_lit_value(f)}));
+                } else 
+                if (current_token.type == tt_identifier) {
+                    string symname = current_token.text;
+                    if (symname.raw[0] == '.') {
+                        if (f->last_nonlocal == NULL)
+                            error_at_token(f, current_token, "local label reference requires a previous non-local label");
+                        expand_local_sym(&symname, f->last_nonlocal, &f->str_alloca);
+                    }
+                    symbol* sym = symbol_find_or_create(symname, &f->symtab);
+                    da_append(&e->instr.args, ((argument){.kind = ak_symbol, .as_symbol = sym}));
+                }
+                advance_token;
+                
+                if (current_token.type == tt_newline) {
+                    advance_token;
+                    break;
+                }
+                if (current_token.type == tt_comma) {
+                    advance_token;
+                    continue;
+                }
 
-            TODO("instructions");
-
+                error_at_token(f, current_token, "expected ',' or newline");
             }
 
-            e->end = &current_token;
+
+            e->end = &peek_token(-1);
+            da_append(&f->instrs, e);
             continue;
         }
 
@@ -135,7 +203,7 @@ symbol* symbol_find_or_create(string name, da(symbol)* restrict symtable) {
     return sym;
 }
 
-void expandlocalname(string* restrict sym, symbol* restrict last_nonlocal, arena* restrict alloca) {
+void expand_local_sym(string* restrict sym, symbol* restrict last_nonlocal, arena* restrict alloca) {
     if (sym->raw[0] != '.') return;
     string newname;
     newname.raw = arena_alloc(alloca, sym->len + last_nonlocal->name.len, 1);
@@ -287,9 +355,9 @@ i64 int_lit_value(luna_file* restrict f) {
     return val * (is_negative ? -1 : 1);
 }
 
-string string_lit_value(luna_file* restrict f) {
+char* string_lit_value(luna_file* restrict f) {
     string t = current_token.text;
-    string val = NULL_STR;
+    char* val = NULL;
     size_t val_len = 0;
 
     // trace string, figure out how long it needs to be
@@ -324,32 +392,33 @@ string string_lit_value(luna_file* restrict f) {
     }
 
     // allocate
-    val = (string){arena_alloc(&f->str_alloca, val_len, 1), val_len};
+    val = arena_alloc(&f->str_alloca, val_len + 1, 1);
+    val[val_len] = '\0';
 
     // fill in string with correct bytes
     u64 val_i = 0;
     FOR_URANGE(i, 1, t.len-1) {
         if (t.raw[i] != '\\') {
-            val.raw[val_i] = t.raw[i];
+            val[val_i] = t.raw[i];
             val_i++;
             continue;
         }
         i++;
         switch (t.raw[i]) {
-        case '0': val.raw[val_i] = '\0'; break;
-        case 'a': val.raw[val_i] = '\a'; break;
-        case 'b': val.raw[val_i] = '\b'; break;
-        case 'e': val.raw[val_i] = '\e'; break;
-        case 'f': val.raw[val_i] = '\f'; break;
-        case 'n': val.raw[val_i] = '\n'; break;
-        case 'r': val.raw[val_i] = '\r'; break;
-        case 't': val.raw[val_i] = '\t'; break;
-        case 'v': val.raw[val_i] = '\v'; break;
-        case '\\': val.raw[val_i] = '\\'; break;
-        case '\"': val.raw[val_i] = '\"'; break;
-        case '\'': val.raw[val_i] = '\''; break;
+        case '0': val[val_i] = '\0'; break;
+        case 'a': val[val_i] = '\a'; break;
+        case 'b': val[val_i] = '\b'; break;
+        case 'e': val[val_i] = '\e'; break;
+        case 'f': val[val_i] = '\f'; break;
+        case 'n': val[val_i] = '\n'; break;
+        case 'r': val[val_i] = '\r'; break;
+        case 't': val[val_i] = '\t'; break;
+        case 'v': val[val_i] = '\v'; break;
+        case '\\': val[val_i] = '\\'; break;
+        case '\"': val[val_i] = '\"'; break;
+        case '\'': val[val_i] = '\''; break;
         case 'x':
-            val.raw[val_i] = ascii_to_digit_val(f, t.raw[i+1], 16) * 0x10 + ascii_to_digit_val(f, t.raw[i+2], 16);
+            val[val_i] = ascii_to_digit_val(f, t.raw[i+1], 16) * 0x10 + ascii_to_digit_val(f, t.raw[i+2], 16);
             i += 2;
             break;
         default:

@@ -43,8 +43,6 @@ int main(int argc, char** argv) {
     source.elem_alloca = arena_make(0x4000);
     source.str_alloca  = arena_make(0x1000);
 
-    printf("%zu size\n", sizeof(element));
-
     parse_file(&source);
 
     printf("SYMBOL TABLE\n");

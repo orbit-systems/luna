@@ -17,23 +17,15 @@ typedef u8 argument_kind; enum {
     ak_invalid,
     ak_symbol,
     ak_register,
-    ak_int_literal,
-    ak_char_literal,
-    ak_f16_literal,
-    ak_f32_literal,
-    ak_f64_literal,
-    ak_str_literal,
+    ak_literal,
+    ak_str,
 };
 
 typedef struct argument {
     union {
-        symbol*   symbol;
+        symbol*   as_symbol;
         aphel_reg as_reg;
-        i64       as_int;
-        u64       as_char;
-        f64       as_f64;
-        f32       as_f32;
-        f16       as_f16;
+        i64       as_literal;
         char*     as_str;
     };
     argument_kind kind;
@@ -44,6 +36,7 @@ typedef u8 element_kind; enum {
     ek_invalid,
     ek_label,
     ek_instruction,
+    ek_pseudoinstruction,
 };
 
 typedef struct element {
@@ -55,10 +48,12 @@ typedef struct element {
         } label;
         struct {
             da(argument) args;
-            u8 opcode;
-            u8 func;
-            u8 format;
+            aphel_inst_code code;
         } instr;
+        struct {
+            argument args[2];
+            aphel_pseudo_code code;
+        } pseudo;
     };
     element_kind kind;
 } element;
@@ -70,10 +65,10 @@ typedef struct {
 } element_list;
 
 typedef struct luna_file {
-    string path;
-    string text;
-    da(token)   tokens;
-    da(symbol)  symtab;
+    string       path;
+    string       text;
+    da(token)    tokens;
+    da(symbol)   symtab;
     element_list instrs;
 
     u64 current_tok;
@@ -81,6 +76,7 @@ typedef struct luna_file {
     
     arena str_alloca;
     arena elem_alloca;
+    
 } luna_file;
 
 void parse_file(luna_file* restrict f);
@@ -91,7 +87,7 @@ element* new_element(arena* restrict alloca, element_kind kind);
 
 symbol* symbol_find(string name, da(symbol)* restrict symtable);
 symbol* symbol_find_or_create(string name, da(symbol)* restrict symtable);
-void expandlocalname(string* restrict sym, symbol* restrict last_nonlocal, arena* restrict alloca);
+void expand_local_sym(string* restrict sym, symbol* restrict last_nonlocal, arena* restrict alloca);
 
 #define sign_extend(val, bitsize) ((u64)((i64)((u64)val << (64-bitsize)) >> (64-bitsize)))
 #define zero_extend(val, bitsize) ((u64)((u64)((u64)val << (64-bitsize)) >> (64-bitsize)))
@@ -99,3 +95,9 @@ void expandlocalname(string* restrict sym, symbol* restrict last_nonlocal, arena
 // figures out if a value can be losslessly compressed into a bitwidth integer
 #define can_losslessly_signext(value, bitwidth) ((value) == sign_extend((value), (bitwidth)))
 #define can_losslessly_zeroext(value, bitwidth) ((value) == zero_extend((value), (bitwidth)))
+
+char* string_lit_value(luna_file* restrict f);
+i64 int_lit_value(luna_file* restrict f);
+f64 float_lit_value(luna_file* restrict f);
+i64 char_lit_value(luna_file* restrict f);
+int ascii_to_digit_val(luna_file* restrict f, char c, u8 base);
