@@ -98,6 +98,10 @@ void append_next_token(lexer* restrict lex) {
     if (lex->cursor >= lex->src.len) {
         da_append(
             &lex->buffer, 
+            ((token){substring_len(lex->src, lex->cursor, 1), tt_newline})
+        );
+        da_append(
+            &lex->buffer, 
             ((token){substring_len(lex->src, lex->cursor, 1), tt_EOF})
         );
         return;

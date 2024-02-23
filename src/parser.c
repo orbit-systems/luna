@@ -9,9 +9,12 @@
     error_at_string((p)->path, (p)->text, (token).text, \
     message __VA_OPT__(,) __VA_ARGS__)
 
+#define str_from_tokens(start, end) ((string){(start).text.raw, (end).text.raw - (start).text.raw + (end).text.len})
+
 #define current_eq(cstr) (string_eq(current_token.text, to_string(cstr)))
 
 void parse_file(luna_file* restrict f) {
+    // ingest
     while (current_token.type != tt_EOF) {
         if (current_token.type == tt_newline) {
             advance_token;
@@ -26,7 +29,7 @@ void parse_file(luna_file* restrict f) {
                 error_at_token(f, current_token, "expected symbol name");
 
             string symname = current_token.text;
-            symbol* s = symbol_find_or_create(symname, &f->symtab);
+            symbol* s = symbol_find_or_create(f, symname);
             if (symname.raw[0] == '.')
                 error_at_token(f, current_token, "cannot define local symbols with 'define'");
             if (s->defined)
@@ -54,67 +57,32 @@ void parse_file(luna_file* restrict f) {
         // labels
         if (current_token.type == tt_identifier && peek_token(1).type == tt_colon) {
             element* e = new_element(&f->elem_alloca, ek_label);
-            e->start = &current_token;
+            e->loc.start = f->current_tok;
             if (current_token.text.raw[0] != '.') {
                 // non-local label
-                symbol* s = symbol_find_or_create(current_token.text, &f->symtab);
+                symbol* s = symbol_find_or_create(f, current_token.text);
                 if (s->defined)
                     error_at_token(f, current_token, "symbol already defined");   
                              
+                // printf("defined '"str_fmt"'\n", str_arg(s->name));
                 s->defined = true;
                 e->label.symbol = s;
-                f->last_nonlocal = &f->symtab.at[f->symtab.len-1];
+                f->last_nonlocal = s;
             } else {
                 // local label
                 if (f->last_nonlocal == NULL)
                     error_at_token(f, current_token, "local label requires a previous non-local label");   
                 string symname = current_token.text;
                 expand_local_sym(&symname, f->last_nonlocal, &f->str_alloca);
-                symbol* s = symbol_find_or_create(symname, &f->symtab);
+                symbol* s = symbol_find_or_create(f, symname);
+                if (s->defined)
+                    error_at_token(f, current_token, "local label already defined");
+                // printf("defined local '"str_fmt"'\n", str_arg(s->name));
                 s->defined = true;
                 e->label.symbol = s;
             }
             advance_token_n(2);
-            e->end = &current_token;
-            da_append(&f->instrs, e);
-            continue;
-        }
-        // some pseudoinstructions
-        if current_eq("loc") {
-            element* e = new_element(&f->elem_alloca, ek_pseudoinstruction);
-            e->start = &current_token;
-            e->pseudo.code = aphel_p_loc;
-
-            advance_token;
-            if (current_token.type != current_token.type == tt_literal_int)
-                error_at_token(f, current_token, "'loc' must take an integer literal");
-            
-            e->pseudo.args[0] = (argument){.kind = ak_literal, .as_literal = parse_regular_literal(f)};
-
-            advance_token;
-            if (current_token.type != tt_newline)
-                error_at_token(f, current_token, "expected new line");
-            advance_token;
-            e->end = &peek_token(-1);
-            da_append(&f->instrs, e);
-            continue;
-        }
-        if current_eq("align") {
-            element* e = new_element(&f->elem_alloca, ek_pseudoinstruction);
-            e->start = &current_token;
-            e->pseudo.code = aphel_p_align;
-
-            advance_token;
-            if (current_token.type != current_token.type == tt_literal_int)
-                error_at_token(f, current_token, "'align' must take an integer literal");
-            
-            e->pseudo.args[0] = (argument){.kind = ak_literal, .as_literal = parse_regular_literal(f)};
-
-            advance_token;
-            if (current_token.type != tt_newline)
-                error_at_token(f, current_token, "expected new line");
-            advance_token;
-            e->end = &peek_token(-1);
+            e->loc.len = f->current_tok - e->loc.start;
             da_append(&f->instrs, e);
             continue;
         }
@@ -122,13 +90,13 @@ void parse_file(luna_file* restrict f) {
         if (current_token.type == tt_identifier) {
             element* e = new_element(&f->elem_alloca, ek_instruction);
             e->instr.code = 0;
-            e->start = &current_token;
+            e->loc.start = f->current_tok;
 
             // this is fucking crazy lmao
 #           define INSTR(name_, namestr_, opcode_, func_, format_) if current_eq(namestr_) e->instr.code = aphel_##name_;
                 INSTRUCTION_LIST
 #           undef INSTR
-            
+
             if (e->instr.code == 0)
                 error_at_token(f, current_token, "unknown instruction");
 
@@ -148,10 +116,10 @@ void parse_file(luna_file* restrict f) {
                     string symname = current_token.text;
                     if (symname.raw[0] == '.') {
                         if (f->last_nonlocal == NULL)
-                            error_at_token(f, current_token, "local label reference requires a previous non-local label");
+                            error_at_token(f, current_token, "reference to a local symbol requires a previous non-local label definition");
                         expand_local_sym(&symname, f->last_nonlocal, &f->str_alloca);
                     }
-                    symbol* sym = symbol_find_or_create(symname, &f->symtab);
+                    symbol* sym = symbol_find_or_create(f, symname);
                     da_append(&e->instr.args, ((argument){.kind = ak_symbol, .as_symbol = sym}));
                 }
                 advance_token;
@@ -164,17 +132,36 @@ void parse_file(luna_file* restrict f) {
                     advance_token;
                     continue;
                 }
-
+                if (current_token.type == tt_EOF) {
+                    continue;
+                }
                 error_at_token(f, current_token, "expected ',' or newline");
             }
 
 
-            e->end = &peek_token(-1);
+            e->loc.len = f->current_tok - e->loc.start;
             da_append(&f->instrs, e);
             continue;
         }
 
         error_at_token(f, current_token, "expected an instruction, label, or directive");
+    }
+}
+
+void check_definitions(luna_file* restrict f) {
+    FOR_URANGE(i, 0, f->instrs.len) {
+        if (f->instrs.at[i]->kind != ek_instruction) continue;
+
+        FOR_URANGE(a, 0, f->instrs.at[i]->instr.args.len) {
+            if (f->instrs.at[i]->instr.args.at[a].kind != ak_symbol) continue;
+            symbol* sym = f->instrs.at[i]->instr.args.at[a].as_symbol;
+            if (!(f->instrs.at[i]->instr.args.at[a].as_symbol->defined)) {
+                error_at_string(f->path, f->text, 
+                    str_from_tokens(f->tokens.at[f->instrs.at[i]->loc.start], f->tokens.at[f->instrs.at[i]->loc.start + f->instrs.at[i]->loc.len-2]),
+                    "symbol '"str_fmt"' undefined", str_arg(f->instrs.at[i]->instr.args.at[a].as_symbol->name)
+                );
+            }
+        }
     }
 }
 
@@ -184,18 +171,18 @@ element* new_element(arena* restrict alloca, element_kind kind) {
     return e;
 }
 
-symbol* symbol_find(string name, da(symbol)* restrict symtable) {
-    FOR_URANGE(i, 0, symtable->len) {
-        if (string_eq(symtable->at[i].name, name)) return &symtable->at[i];
+symbol* symbol_find(luna_file* restrict f, string name) {
+    FOR_URANGE(i, 0, f->symtab.len) {
+        if (string_eq(f->symtab.at[i]->name, name)) return f->symtab.at[i];
     }
     return NULL;
 }
 
-symbol* symbol_find_or_create(string name, da(symbol)* restrict symtable) {
-    symbol* sym = symbol_find(name, symtable);
+symbol* symbol_find_or_create(luna_file* restrict f, string name) {
+    symbol* sym = symbol_find(f, name);
     if (sym == NULL) {
-        da_append(symtable, ((symbol){name, 0}));
-        sym = &symtable->at[symtable->len-1];
+        sym = arena_alloc(&f->elem_alloca, sizeof(symbol), alignof(symbol));
+        da_append(&f->symtab, sym);
         sym->name = name;
         sym->defined = false;
         sym->value = 0;

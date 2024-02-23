@@ -46,19 +46,22 @@ int main(int argc, char** argv) {
     parse_file(&source);
 
     printf("SYMBOL TABLE\n");
-    u64 max_sym_len = source.symtab.at[0].name.len;
+    u64 max_sym_len = source.symtab.at[0]->name.len;
     FOR_URANGE(i, 1, source.symtab.len) {
-        max_sym_len = max(max_sym_len, source.symtab.at[i].name.len);
+        max_sym_len = max(max_sym_len, source.symtab.at[i]->name.len);
     }
     FOR_URANGE(i, 0, source.symtab.len) {
-        printf("    "str_fmt, str_arg(source.symtab.at[i].name));
+        printf("    "str_fmt, str_arg(source.symtab.at[i]->name));
 
-        FOR_URANGE(j, 0, max_sym_len - source.symtab.at[i].name.len + 4) putchar(' ');
-
+        FOR_URANGE(j, 0, max_sym_len - source.symtab.at[i]->name.len + 4) putchar(' ');
+        source.symtab.at[i]->value = 10;
         printf("%s  %16lx\n",
-            source.symtab.at[i].defined ? "def  " : "undef", source.symtab.at[i].value
+            source.symtab.at[i]->defined ? "def  " : "undef", source.symtab.at[i]->value
         );
     }
+
+    check_definitions(&source);
+
 }
 
 

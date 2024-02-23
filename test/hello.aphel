@@ -1,5 +1,7 @@
 
-define OUT_PORT, 10.0d
+define OUT_PORT, 10123243
+
+loc 0
 
 __entry__:
 IVT:
@@ -16,7 +18,7 @@ start:
     li ra, IVT
     li rb, interrupt_handler
     .fill_IVT:
-        sw  ra, 0, rb
+        sw  ra, rb
         add ra, ra, 8
         cmp ra, 2048
         blt .fill_IVT
@@ -30,7 +32,7 @@ start:
     li   ra, 0
     pop  ra
 
-    li   ra, setup_passed_text
+    li   ra, hello_world_text
     call rb, print_cstring
 
     .spin:
@@ -54,13 +56,14 @@ interrupt_handler:
 print_cstring: ; (charptr: ra) -> (ra)
     push rb
     .loop:
-        lb  rb, ra, 0
+        lb  rb, ra
         cmp rb, 0
-        beq spin
+        beq .end
         out OUT_PORT, rb
         add ra, ra, 1
         bra .loop
     pop  rb
+    .end:
     ret
 
     

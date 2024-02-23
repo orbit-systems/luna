@@ -2,6 +2,7 @@
 #define LEXER_H
 
 // pretty much wholesale copied from the mars repo
+// its fine tho cause the mars lexer is damn fast
 
 #include "orbit.h"
 
