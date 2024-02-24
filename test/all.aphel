@@ -12,8 +12,8 @@ skip 100
 utf8 "hello there"
 
 align 4
-start:
 
+start:
     nop
     inv
     int 10
@@ -98,21 +98,21 @@ start:
     lbs     ra, rb, 10          ; ra <- mem[rb + 10]
     lbs     ra, rb, 10, rc      ; ra <- mem[rb + 10 + rc]
     lbs     ra, rb, 10, rc, 4   ; ra <- mem[rb + 10 + rc << 4]
-    sw      rb, ra              ; mem[rb] <- ra
-    sw      rb, 10, ra          ; mem[rb + 10] <- ra
-    sw      rb, 10, rc, ra      ; mem[rb + 10 + rc] <- ra
+    sw      rb, ra              ; mem[rb]                <- ra
+    sw      rb, 10, ra          ; mem[rb + 10]           <- ra
+    sw      rb, 10, rc, ra      ; mem[rb + 10 + rc]      <- ra
     sw      rb, 10, rc, 4, ra   ; mem[rb + 10 + rc << 4] <- ra
-    sh      rb, ra              ; mem[rb] <- ra
-    sh      rb, 10, ra          ; mem[rb + 10] <- ra
-    sh      rb, 10, rc, ra      ; mem[rb + 10 + rc] <- ra
+    sh      rb, ra              ; mem[rb]                <- ra
+    sh      rb, 10, ra          ; mem[rb + 10]           <- ra
+    sh      rb, 10, rc, ra      ; mem[rb + 10 + rc]      <- ra
     sh      rb, 10, rc, 4, ra   ; mem[rb + 10 + rc << 4] <- ra
-    sq      rb, ra              ; mem[rb] <- ra
-    sq      rb, 10, ra          ; mem[rb + 10] <- ra
-    sq      rb, 10, rc, ra      ; mem[rb + 10 + rc] <- ra
+    sq      rb, ra              ; mem[rb]                <- ra
+    sq      rb, 10, ra          ; mem[rb + 10]           <- ra
+    sq      rb, 10, rc, ra      ; mem[rb + 10 + rc]      <- ra
     sq      rb, 10, rc, 4, ra   ; mem[rb + 10 + rc << 4] <- ra
-    sb      rb, ra              ; mem[rb] <- ra
-    sb      rb, 10, ra          ; mem[rb + 10] <- ra
-    sb      rb, 10, rc, ra      ; mem[rb + 10 + rc] <- ra
+    sb      rb, ra              ; mem[rb]                <- ra
+    sb      rb, 10, ra          ; mem[rb + 10]           <- ra
+    sb      rb, 10, rc, ra      ; mem[rb + 10 + rc]      <- ra
     sb      rb, 10, rc, 4, ra   ; mem[rb + 10 + rc << 4] <- ra
 
     cmp     ra, rb
@@ -167,7 +167,7 @@ start:
     nor     ra, rb, 1
     norr    ra, rb, ra
     nori    ra, rb, 1
-    not     ra, rb, ra
+    not     ra, rb
     xor     ra, rb, ra
     xor     ra, rb, 1
     xorr    ra, rb, ra
@@ -205,7 +205,7 @@ start:
     fsub.16     ra, rb, rc
     fmul.16     ra, rb, rc
     fdiv.16     ra, rb, rc
-    fma.16      ra, rb
+    fma.16      ra, rb, rc
     fsqrt.16    ra, rb
     fmin.16     ra, rb, rc
     fmax.16     ra, rb, rc
@@ -223,7 +223,7 @@ start:
     fsub.32     ra, rb, rc
     fmul.32     ra, rb, rc
     fdiv.32     ra, rb, rc
-    fma.32      ra, rb
+    fma.32      ra, rb, rc
     fsqrt.32    ra, rb
     fmin.32     ra, rb, rc
     fmax.32     ra, rb, rc
@@ -241,7 +241,7 @@ start:
     fsub.64     ra, rb, rc
     fmul.64     ra, rb, rc
     fdiv.64     ra, rb, rc
-    fma.64      ra, rb
+    fma.64      ra, rb, rc
     fsqrt.64    ra, rb
     fmin.64     ra, rb, rc
     fmax.64     ra, rb, rc

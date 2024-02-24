@@ -6,6 +6,14 @@
 #include "arena.h"
 #include "aphel.h"
 
+#define sign_extend(val, bitsize) ((u64)((i64)((u64)val << (64-bitsize)) >> (64-bitsize)))
+#define zero_extend(val, bitsize) ((u64)((u64)((u64)val << (64-bitsize)) >> (64-bitsize)))
+
+// figures out if a value can be losslessly compressed into a bitwidth integer
+#define can_losslessly_signext(value, bitwidth) ((value) == sign_extend((value), (bitwidth)))
+#define can_losslessly_zeroext(value, bitwidth) ((value) == zero_extend((value), (bitwidth)))
+
+
 typedef struct symbol {
     string name;
     u64 value;
@@ -23,6 +31,7 @@ typedef u8 arg_kind; enum {
     ak_symbol,
     ak_register,
     ak_literal,
+    ak_lit_or_sym,
     ak_str,
 };
 
@@ -103,3 +112,22 @@ i64 int_lit_value(luna_file* restrict f);
 f64 float_lit_value(luna_file* restrict f);
 i64 char_lit_value(luna_file* restrict f);
 int ascii_to_digit_val(luna_file* restrict f, char c, u8 base);
+
+#define error_at_token(p, token, message, ...) \
+    error_at_string((p)->path, (p)->text, (token).text, \
+    message __VA_OPT__(,) __VA_ARGS__)
+
+#define str_from_tokens(start, end) ((string){(start).text.raw, (end).text.raw - (start).text.raw + (end).text.len})
+
+#define error_at_elem(f, elem, message, ...) do { \
+    if (elem->kind == ek_instruction) { \
+        u64 offset = elem->instr.args.len; \
+        if (offset > 0) offset = offset * 2 - 1; \
+        error_at_string(f->path, f->text, \
+            str_from_tokens(f->tokens.at[elem->loc.start], f->tokens.at[elem->loc.start + offset]), \
+            message __VA_OPT__(,) __VA_ARGS__); \
+    } \
+} while (0)
+
+// assuming the element is of type ek_instruction
+bool check_args(element* restrict e, arg_kind args[], size_t arglen);
