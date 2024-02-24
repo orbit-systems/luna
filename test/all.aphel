@@ -1,0 +1,251 @@
+define BRUH, 10
+
+loc 10, 0
+align 4, 0
+byte 1
+byte 1, 0
+d8 10, 2
+d16 10, 2
+d32 10, 2
+d64 10, 2
+skip 100
+utf8 "hello there"
+
+align 4
+start:
+
+    nop
+    inv
+    int 10
+    iret
+    ires
+    usr     ra
+
+    out     ra, rb
+    out     8,  rb
+    outr    ra, rb
+    outi    8,  rb
+    in      ra, rb
+    in      ra, 8
+    inr     ra, rb
+    ini     ra, 8
+
+    call    ra, 10
+    callr   ra, 10, ra
+    jal     ra, 10,
+    jalr    ra, 10, ra
+    ret
+    retr    ra
+    bra     start
+    beq     start
+    bez     start
+    blt     start
+    ble     start
+    bltu    start
+    bleu    start
+    bne     start
+    bnz     start
+    bge     start
+    bgt     start
+    bgeu    start
+    bgtu    start
+
+    push    ra
+    pop     ra
+    enter
+    leave
+
+    mov     ra, rb
+    li      ra, 0x7FFF
+    li      ra, 0x7FFF_FFFF
+    li      ra, 0x7FFF_FFFF_FFFF
+    li      ra, 0x7FFF_FFFF_FFFF_FFFF
+    li      ra, start
+    lli     ra, 1
+    llis    ra, 1
+    lui     ra, 1
+    luis    ra, 1
+    lti     ra, 1
+    ltis    ra, 1
+    ltui    ra, 1
+    ltuis   ra, 1
+
+    lw      ra, rb              ; ra <- mem[rb]
+    lw      ra, rb, 10          ; ra <- mem[rb + 10]
+    lw      ra, rb, 10, rc      ; ra <- mem[rb + 10 + rc]
+    lw      ra, rb, 10, rc, 4   ; ra <- mem[rb + 10 + rc << 4]
+    lh      ra, rb              ; ra <- mem[rb]
+    lh      ra, rb, 10          ; ra <- mem[rb + 10]
+    lh      ra, rb, 10, rc      ; ra <- mem[rb + 10 + rc]
+    lh      ra, rb, 10, rc, 4   ; ra <- mem[rb + 10 + rc << 4]
+    lhs     ra, rb              ; ra <- mem[rb]
+    lhs     ra, rb, 10          ; ra <- mem[rb + 10]
+    lhs     ra, rb, 10, rc      ; ra <- mem[rb + 10 + rc]
+    lhs     ra, rb, 10, rc, 4   ; ra <- mem[rb + 10 + rc << 4]
+    lq      ra, rb              ; ra <- mem[rb]
+    lq      ra, rb, 10          ; ra <- mem[rb + 10]
+    lq      ra, rb, 10, rc      ; ra <- mem[rb + 10 + rc]
+    lq      ra, rb, 10, rc, 4   ; ra <- mem[rb + 10 + rc << 4]
+    lqs     ra, rb              ; ra <- mem[rb]
+    lqs     ra, rb, 10          ; ra <- mem[rb + 10]
+    lqs     ra, rb, 10, rc      ; ra <- mem[rb + 10 + rc]
+    lqs     ra, rb, 10, rc, 4   ; ra <- mem[rb + 10 + rc << 4]
+    lb      ra, rb              ; ra <- mem[rb]
+    lb      ra, rb, 10          ; ra <- mem[rb + 10]
+    lb      ra, rb, 10, rc      ; ra <- mem[rb + 10 + rc]
+    lb      ra, rb, 10, rc, 4   ; ra <- mem[rb + 10 + rc << 4]
+    lbs     ra, rb              ; ra <- mem[rb]
+    lbs     ra, rb, 10          ; ra <- mem[rb + 10]
+    lbs     ra, rb, 10, rc      ; ra <- mem[rb + 10 + rc]
+    lbs     ra, rb, 10, rc, 4   ; ra <- mem[rb + 10 + rc << 4]
+    sw      rb, ra              ; mem[rb] <- ra
+    sw      rb, 10, ra          ; mem[rb + 10] <- ra
+    sw      rb, 10, rc, ra      ; mem[rb + 10 + rc] <- ra
+    sw      rb, 10, rc, 4, ra   ; mem[rb + 10 + rc << 4] <- ra
+    sh      rb, ra              ; mem[rb] <- ra
+    sh      rb, 10, ra          ; mem[rb + 10] <- ra
+    sh      rb, 10, rc, ra      ; mem[rb + 10 + rc] <- ra
+    sh      rb, 10, rc, 4, ra   ; mem[rb + 10 + rc << 4] <- ra
+    sq      rb, ra              ; mem[rb] <- ra
+    sq      rb, 10, ra          ; mem[rb + 10] <- ra
+    sq      rb, 10, rc, ra      ; mem[rb + 10 + rc] <- ra
+    sq      rb, 10, rc, 4, ra   ; mem[rb + 10 + rc << 4] <- ra
+    sb      rb, ra              ; mem[rb] <- ra
+    sb      rb, 10, ra          ; mem[rb + 10] <- ra
+    sb      rb, 10, rc, ra      ; mem[rb + 10 + rc] <- ra
+    sb      rb, 10, rc, 4, ra   ; mem[rb + 10 + rc << 4] <- ra
+
+    cmp     ra, rb
+    cmp     ra, 100
+    cmp     100, ra
+    cmpr    ra, rb
+    cmpi    ra, 100
+    cmpi    100, ra
+
+    add     ra, rb, ra
+    add     ra, rb, 1
+    addr    ra, rb, ra
+    addi    ra, rb, 1
+    sub     ra, rb, ra
+    sub     ra, rb, 1
+    subr    ra, rb, ra
+    subi    ra, rb, 1
+    imul    ra, rb, ra
+    imul    ra, rb, 1
+    imulr   ra, rb, ra
+    imuli   ra, rb, 1
+    idiv    ra, rb, ra
+    idiv    ra, rb, 1
+    idivr   ra, rb, ra
+    idivi   ra, rb, 1
+    umul    ra, rb, ra
+    umul    ra, rb, 1
+    umulr   ra, rb, ra
+    umuli   ra, rb, 1
+    udiv    ra, rb, ra
+    udiv    ra, rb, 1
+    udivr   ra, rb, ra
+    udivi   ra, rb, 1
+    rem     ra, rb, ra
+    rem     ra, rb, 1
+    remr    ra, rb, ra
+    remi    ra, rb, 1
+    mod     ra, rb, ra
+    mod     ra, rb, 1
+    modr    ra, rb, ra
+    modi    ra, rb, 1
+
+    and     ra, rb, ra
+    and     ra, rb, 1
+    andr    ra, rb, ra
+    andi    ra, rb, 1
+    or      ra, rb, ra
+    or      ra, rb, 1
+    orr     ra, rb, ra
+    ori     ra, rb, 1
+    nor     ra, rb, ra
+    nor     ra, rb, 1
+    norr    ra, rb, ra
+    nori    ra, rb, 1
+    not     ra, rb, ra
+    xor     ra, rb, ra
+    xor     ra, rb, 1
+    xorr    ra, rb, ra
+    xori    ra, rb, 1
+    shl     ra, rb, ra
+    shl     ra, rb, 1
+    shlr    ra, rb, ra
+    shli    ra, rb, 1
+    asr     ra, rb, ra
+    asr     ra, rb, 1
+    asrr    ra, rb, ra
+    asri    ra, rb, 1
+    lsr     ra, rb, ra
+    lsr     ra, rb, 1
+    lsrr    ra, rb, ra
+    lsri    ra, rb, 1
+    bit     ra, rb, ra
+    bit     ra, rb, 1
+    bitr    ra, rb, ra
+    biti    ra, rb, 1
+    setfs   ra
+    setfz   ra
+    setfcb  ra
+    setfcbu ra
+    setfe   ra
+    setfl   ra
+    setflu  ra
+
+    fcmp.16     ra, rb
+    fto.16      ra, rb
+    ffrom.16    ra, rb
+    fneg.16     ra, rb
+    fabs.16     ra, rb
+    fadd.16     ra, rb, rc
+    fsub.16     ra, rb, rc
+    fmul.16     ra, rb, rc
+    fdiv.16     ra, rb, rc
+    fma.16      ra, rb
+    fsqrt.16    ra, rb
+    fmin.16     ra, rb, rc
+    fmax.16     ra, rb, rc
+    fsat.16     ra, rb
+    fcnv.16.32  ra, rb
+    fcnv.16.64  ra, rb
+    fnan.16     ra, rb
+
+    fcmp.32     ra, rb
+    fto.32      ra, rb
+    ffrom.32    ra, rb
+    fneg.32     ra, rb
+    fabs.32     ra, rb
+    fadd.32     ra, rb, rc
+    fsub.32     ra, rb, rc
+    fmul.32     ra, rb, rc
+    fdiv.32     ra, rb, rc
+    fma.32      ra, rb
+    fsqrt.32    ra, rb
+    fmin.32     ra, rb, rc
+    fmax.32     ra, rb, rc
+    fsat.32     ra, rb
+    fcnv.32.16  ra, rb
+    fcnv.32.64  ra, rb
+    fnan.32     ra, rb
+
+    fcmp.64     ra, rb
+    fto.64      ra, rb
+    ffrom.64    ra, rb
+    fneg.64     ra, rb
+    fabs.64     ra, rb
+    fadd.64     ra, rb, rc
+    fsub.64     ra, rb, rc
+    fmul.64     ra, rb, rc
+    fdiv.64     ra, rb, rc
+    fma.64      ra, rb
+    fsqrt.64    ra, rb
+    fmin.64     ra, rb, rc
+    fmax.64     ra, rb, rc
+    fsat.64     ra, rb
+    fcnv.64.16  ra, rb
+    fcnv.64.32  ra, rb
+    fnan.64     ra, rb

@@ -63,6 +63,10 @@ typedef _Float16 f16;
     printf("\x1b[31m\x1b[1mCRASH\x1b[0m: \"%s\" at %s:%d\n", (msg), (__FILE__), (__LINE__)); \
     exit(EXIT_FAILURE); } while (0)
 
+#define UNREACHABLE(msg) do { \
+    printf("\x1b[31m\x1b[1mUNREACHABLE\x1b[0m: \"%s\" at %s:%d\n", (msg), (__FILE__), (__LINE__)); \
+    exit(EXIT_FAILURE); } while (0)
+
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #define min(a,b) ((a) < (b) ? (a) : (b))
 

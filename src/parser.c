@@ -83,7 +83,7 @@ void parse_file(luna_file* restrict f) {
             }
             advance_token_n(2);
             e->loc.len = f->current_tok - e->loc.start;
-            da_append(&f->instrs, e);
+            da_append(&f->elems, e);
             continue;
         }
 
@@ -92,7 +92,7 @@ void parse_file(luna_file* restrict f) {
             e->instr.code = 0;
             e->loc.start = f->current_tok;
 
-            // this is fucking crazy lmao
+            // lmfao
 #           define INSTR(name_, namestr_, opcode_, func_, format_) if current_eq(namestr_) e->instr.code = aphel_##name_;
                 INSTRUCTION_LIST
 #           undef INSTR
@@ -140,7 +140,7 @@ void parse_file(luna_file* restrict f) {
 
 
             e->loc.len = f->current_tok - e->loc.start;
-            da_append(&f->instrs, e);
+            da_append(&f->elems, e);
             continue;
         }
 
@@ -149,16 +149,18 @@ void parse_file(luna_file* restrict f) {
 }
 
 void check_definitions(luna_file* restrict f) {
-    FOR_URANGE(i, 0, f->instrs.len) {
-        if (f->instrs.at[i]->kind != ek_instruction) continue;
+    FOR_URANGE(i, 0, f->elems.len) {
+        if (f->elems.at[i]->kind != ek_instruction) continue;
 
-        FOR_URANGE(a, 0, f->instrs.at[i]->instr.args.len) {
-            if (f->instrs.at[i]->instr.args.at[a].kind != ak_symbol) continue;
-            symbol* sym = f->instrs.at[i]->instr.args.at[a].as_symbol;
-            if (!(f->instrs.at[i]->instr.args.at[a].as_symbol->defined)) {
-                error_at_string(f->path, f->text, 
-                    str_from_tokens(f->tokens.at[f->instrs.at[i]->loc.start], f->tokens.at[f->instrs.at[i]->loc.start + f->instrs.at[i]->loc.len-2]),
-                    "symbol '"str_fmt"' undefined", str_arg(f->instrs.at[i]->instr.args.at[a].as_symbol->name)
+        FOR_URANGE(a, 0, f->elems.at[i]->instr.args.len) {
+            if (f->elems.at[i]->instr.args.at[a].kind != ak_symbol) continue;
+            symbol* sym = f->elems.at[i]->instr.args.at[a].as_symbol;
+            if (!(f->elems.at[i]->instr.args.at[a].as_symbol->defined)) {
+                u64 offset = a + 1;
+                if (offset > 0) offset = offset * 2 - 1;
+                error_at_token(f,
+                    f->tokens.at[f->elems.at[i]->loc.start + offset], 
+                    "symbol '"str_fmt"' undefined", str_arg(f->elems.at[i]->instr.args.at[a].as_symbol->name)
                 );
             }
         }
@@ -257,9 +259,13 @@ f64 float_lit_value(luna_file* restrict f) {
     f64 val = 0;
 
     int digit_start = 0;
+    if (t.raw[0] == '-') {
+        digit_start = 1;
+    }
 
     int decimal_index = 0;
     for (int i = digit_start; i < t.len; i++) {
+        if (t.raw[i] == '_') continue;
         if (t.raw[i] == '.') {
             decimal_index = i;
             break;
@@ -274,6 +280,7 @@ f64 float_lit_value(luna_file* restrict f) {
             e_index = i;
             break;
         }
+        if (t.raw[i] == '_') continue;
         val = val + (f64)ascii_to_digit_val(f, t.raw[i], 10) * factor;
         factor *= 0.1;
     }
@@ -284,14 +291,13 @@ f64 float_lit_value(luna_file* restrict f) {
     if (t.raw[e_index+1] == '-') e_index++;
     
     for (int i = e_index+1; i < t.len-1; i++) {
+        if (t.raw[i] == '_') continue;
         exp_val = exp_val*10 + ascii_to_digit_val(f, t.raw[i], 10);
     }
 
     val *= pow(10.0, (t.raw[e_index] == '-' ? -exp_val : exp_val));
 
-    // printf("\n\n%lf\n\n", (is_negative ? -val : val));
-
-    return val;
+    return digit_start == 1 ? -val : val;
 }
 
 i64 int_lit_value(luna_file* restrict f) {
@@ -308,6 +314,7 @@ i64 int_lit_value(luna_file* restrict f) {
 
     if (t.raw[digit_start] != '0') { // basic base-10 parse
         FOR_URANGE(i, digit_start, t.len) {
+            if (t.raw[i] == '_') continue;
             val = val * 10 + ascii_to_digit_val(f, t.raw[i], 10);
         }
         return val * (is_negative ? -1 : 1);
@@ -337,6 +344,7 @@ i64 int_lit_value(luna_file* restrict f) {
     if (t.len < 3 + digit_start) error_at_token(f, current_token, "expected digit after '%c'", t.raw[digit_start+1]);
 
     FOR_URANGE(i, 2 + digit_start, t.len) {
+        if (t.raw[i] == '_') continue;
         val = val * 10 + ascii_to_digit_val(f, t.raw[i], base);
     }
     return val * (is_negative ? -1 : 1);

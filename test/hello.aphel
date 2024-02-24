@@ -1,5 +1,7 @@
 
-define OUT_PORT, 10123243
+define OUT_PORT, 10
+
+li ra, -3.0h
 
 loc 0
 
@@ -7,8 +9,8 @@ __entry__:
 IVT:
     bra start
 
-
 loc 2048
+align 4
 start:
     ; fill interrupt handlers
     ; for (int i = 0; i < 2048; i+=8) {

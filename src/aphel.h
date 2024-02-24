@@ -4,25 +4,26 @@
 #include "orbit.h"
 
 typedef u8 aphel_reg; enum {
-    r_rz = 0,
-    r_ra = 1,
-    r_rb = 2,
-    r_rc = 3,
-    r_rd = 4,
-    r_re = 5,
-    r_rf = 6,
-    r_rg = 7,
-    r_rh = 8,
-    r_ri = 9,
-    r_rj = 10,
-    r_rk = 11,
-    r_ip = 12,
-    r_sp = 13,
-    r_fp = 14,
-    r_st = 15,
+    reg_rz = 0,
+    reg_ra = 1,
+    reg_rb = 2,
+    reg_rc = 3,
+    reg_rd = 4,
+    reg_re = 5,
+    reg_rf = 6,
+    reg_rg = 7,
+    reg_rh = 8,
+    reg_ri = 9,
+    reg_rj = 10,
+    reg_rk = 11,
+    reg_ip = 12,
+    reg_sp = 13,
+    reg_fp = 14,
+    reg_st = 15,
 };
 
 typedef u8 aphel_fmt; enum {
+    fmt_invalid,
     fmt_E,
     fmt_R,
     fmt_M,
@@ -30,17 +31,18 @@ typedef u8 aphel_fmt; enum {
     fmt_B,
 };
 
-typedef u8 aphel_imm; enum {
+// how to treat and check imm values
+typedef u8 aphel_imm_strat; enum {
     imm_none,
-    imm_interrupt,
+    imm_zeroext_8,
+    imm_zeroext_16,
     imm_signext,
-    imm_zeroext,
     imm_branch,
 };
 
 // name, opcode, func, format
 #define INSTRUCTION_LIST \
-    INSTR(REAL_MIN, "$",  0x00, 0, 0) \
+    INSTR(REAL_MIN, "",   0x00, 0, 0) \
     INSTR(int,   "int",   0x01, 0, fmt_F) \
     INSTR(iret,  "iret",  0x01, 1, fmt_F) \
     INSTR(ires,  "ires",  0x01, 2, fmt_F) \
@@ -184,9 +186,10 @@ typedef u8 aphel_imm; enum {
     INSTR(fcnv64_16,  "fcnv.64.16",  0x4e, 0b0010, fmt_E) \
     INSTR(fcnv64_32,  "fcnv.64.32",  0x4e, 0b0110, fmt_E) \
     INSTR(fnan64,  "fnan.64",  0x4f, 2, fmt_E) \
-    INSTR(REAL_MAX, "$",  0x00, 0, 0) \
 \
-    INSTR(PSUEDO_MIN, "$",  0x00, 0, 0) \
+    INSTR(REAL_MAX, "",     0x00, 0, 0) \
+\
+    INSTR(PSUEDO_MIN, "",   0x00, 0, 0) \
 \
     INSTR(p_nop,   "nop",   0x00, 0, 0) \
     INSTR(p_inv,   "inv",   0x00, 0, 0) \
@@ -194,6 +197,7 @@ typedef u8 aphel_imm; enum {
     INSTR(p_out,   "out",   0x00, 0, 0) \
     INSTR(p_call,  "call",  0x00, 0, 0) \
     INSTR(p_callr, "callr", 0x00, 0, 0) \
+    INSTR(p_mov,   "mov",   0x00, 0, 0) \
     INSTR(p_li,    "li",    0x00, 0, 0) \
     INSTR(p_cmp,   "cmp",   0x00, 0, 0) \
     INSTR(p_add,   "add",   0x00, 0, 0) \
@@ -224,21 +228,27 @@ typedef u8 aphel_imm; enum {
     INSTR(p_loc,   "loc",   0x00, 0, 0) \
     INSTR(p_align, "align", 0x00, 0, 0) \
     INSTR(p_skip,  "skip",  0x00, 0, 0) \
+    INSTR(p_byte,  "byte",  0x00, 0, 0) \
     INSTR(p_d8,    "d8",    0x00, 0, 0) \
     INSTR(p_d16,   "d16",   0x00, 0, 0) \
     INSTR(p_d32,   "d32",   0x00, 0, 0) \
     INSTR(p_d64,   "d64",   0x00, 0, 0) \
     INSTR(p_utf8,  "utf8",  0x00, 0, 0) \
 \
-    INSTR(PSUEDO_MAX, "$",  0x00, 0, 0) \
+    INSTR(PSUEDO_MAX, "",  0x00, 0, 0) \
 
 
 typedef u16 aphel_inst_code; enum {
     aphel_invalid,
-#   define INSTR(name_, namestr_, opcode_, func_, format_) aphel_##name_,
+#   define INSTR(name_, namestreg_, opcode_, func_, format_) aphel_##name_,
         INSTRUCTION_LIST
 #   undef INSTR
     aphel_COUNT
+};
+
+enum {
+    special_none,
+    special_cmpi_reverse,
 };
 
 typedef union {
