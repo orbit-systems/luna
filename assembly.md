@@ -46,11 +46,11 @@ In addition to ISA-defined pseudo-instructions, these are supplied:
 
 - `d8 (val), [count]` - Repeat an 8-bit value `(val)`, `[count]`(default to 1) # of times.
 
-- `d16 (val), [count]` - Repeat a 16-bit value `(val)`, `[count]`(default to 1) # of times. Automatically aligned to multiple of 2.
+- `d16 (val), [count]` - Repeat a 16-bit value `(val)`, `[count]`(default to 1) # of times. Errors if not aligned to multiple of 2.
 
-- `d32 (val), [count]` - Repeat a 32-bit value `(val)`, `[count]`(default to 1) # of times. Automatically aligned to multiple of 4.
+- `d32 (val), [count]` - Repeat a 32-bit value `(val)`, `[count]`(default to 1) # of times. Errors if not aligned to multiple of 4.
 
-- `d64 (val), [count]` - Repeat a 64-bit value `(val)`, `[count]`(default to 1) # of times. Automatically aligned to multiple of 8.
+- `d64 (val), [count]` - Repeat a 64-bit value `(val)`, `[count]`(default to 1) # of times. Errors if not aligned to multiple of 8.
 
 - `skip (val)` - equivalent to `d8 0, (val)`.
 
