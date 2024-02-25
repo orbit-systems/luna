@@ -32,106 +32,109 @@ typedef u8 aphel_fmt; enum {
 };
 
 // how to treat and check imm values
-typedef u8 aphel_imm_strat; enum {
+typedef u8 imm_strategy; enum {
     imm_none,
     imm_zeroext_8,
     imm_zeroext_16,
-    imm_signext,
+    imm_zeroext_20,
+    imm_signext_8,
+    imm_signext_16,
+    imm_signext_32,
     imm_branch,
 };
 
 // name, opcode, func, format
 #define INSTRUCTION_LIST \
-    INSTR(REAL_MIN, "",   0x00, 0, 0) \
-    INSTR(int,   "int",   0x01, 0, fmt_F) \
-    INSTR(iret,  "iret",  0x01, 1, fmt_F) \
-    INSTR(ires,  "ires",  0x01, 2, fmt_F) \
-    INSTR(usr,   "usr",   0x01, 3, fmt_F) \
+    INSTR(REAL_MIN, "",   0x00, 0, 0     ) \
+    INSTR(int,   "int",   0x01, 0, fmt_F ) \
+    INSTR(iret,  "iret",  0x01, 1, fmt_F ) \
+    INSTR(ires,  "ires",  0x01, 2, fmt_F ) \
+    INSTR(usr,   "usr",   0x01, 3, fmt_F ) \
     \
-    INSTR(outr,  "outr",  0x02, 0, fmt_M) \
-    INSTR(outi,  "outi",  0x03, 0, fmt_M) \
-    INSTR(inr,   "inr",   0x04, 0, fmt_M) \
-    INSTR(ini,   "ini",   0x05, 0, fmt_M) \
+    INSTR(outr,  "outr",  0x02, 0, fmt_M ) \
+    INSTR(outi,  "outi",  0x03, 0, fmt_M ) \
+    INSTR(inr,   "inr",   0x04, 0, fmt_M ) \
+    INSTR(ini,   "ini",   0x05, 0, fmt_M ) \
     \
-    INSTR(jal,   "jal",   0x06, 0, fmt_M) \
-    INSTR(jalr,  "jalr",  0x07, 0, fmt_M) \
-    INSTR(ret,   "ret",   0x08, 0, fmt_M) \
-    INSTR(retr,  "retr",  0x09, 0, fmt_M) \
-    INSTR(bra,   "bra",   0x0a, 0, fmt_B) \
-    INSTR(beq,   "beq",   0x0a, 1, fmt_B) \
-    INSTR(bez,   "bez",   0x0a, 2, fmt_B) \
-    INSTR(blt,   "blt",   0x0a, 3, fmt_B) \
-    INSTR(ble,   "ble",   0x0a, 4, fmt_B) \
-    INSTR(bltu,  "bltu",  0x0a, 5, fmt_B) \
-    INSTR(bleu,  "bleu",  0x0a, 6, fmt_B) \
-    INSTR(bne,   "bne",   0x0a, 9, fmt_B) \
+    INSTR(jal,   "jal",   0x06, 0, fmt_M ) \
+    INSTR(jalr,  "jalr",  0x07, 0, fmt_M ) \
+    INSTR(ret,   "ret",   0x08, 0, fmt_M ) \
+    INSTR(retr,  "retr",  0x09, 0, fmt_M ) \
+    INSTR(bra,   "bra",   0x0a, 0, fmt_B ) \
+    INSTR(beq,   "beq",   0x0a, 1, fmt_B ) \
+    INSTR(bez,   "bez",   0x0a, 2, fmt_B ) \
+    INSTR(blt,   "blt",   0x0a, 3, fmt_B ) \
+    INSTR(ble,   "ble",   0x0a, 4, fmt_B ) \
+    INSTR(bltu,  "bltu",  0x0a, 5, fmt_B ) \
+    INSTR(bleu,  "bleu",  0x0a, 6, fmt_B ) \
+    INSTR(bne,   "bne",   0x0a, 9, fmt_B ) \
     INSTR(bnz,   "bnz",   0x0a, 10, fmt_B) \
     INSTR(bge,   "bge",   0x0a, 11, fmt_B) \
     INSTR(bgt,   "bgt",   0x0a, 12, fmt_B) \
     INSTR(bgeu,  "bgeu",  0x0a, 13, fmt_B) \
     INSTR(bgtu,  "bgtu",  0x0a, 14, fmt_B) \
     \
-    INSTR(push,  "push",  0x0b, 0, fmt_M) \
-    INSTR(pop,   "pop",   0x0c, 0, fmt_M) \
-    INSTR(enter, "enter", 0x0d, 0, fmt_B) \
-    INSTR(leave, "leave", 0x0e, 0, fmt_B) \
+    INSTR(push,  "push",  0x0b, 0, fmt_M ) \
+    INSTR(pop,   "pop",   0x0c, 0, fmt_M ) \
+    INSTR(enter, "enter", 0x0d, 0, fmt_B ) \
+    INSTR(leave, "leave", 0x0e, 0, fmt_B ) \
     \
-    INSTR(lli,   "lli",   0x10, 0, fmt_F) \
-    INSTR(llis,  "llis",  0x10, 1, fmt_F) \
-    INSTR(lui,   "lui",   0x10, 2, fmt_F) \
-    INSTR(luis,  "luis",  0x10, 3, fmt_F) \
-    INSTR(lti,   "lti",   0x10, 4, fmt_F) \
-    INSTR(ltis,  "ltis",  0x10, 5, fmt_F) \
-    INSTR(ltui,  "ltui",  0x10, 6, fmt_F) \
-    INSTR(ltuis, "ltuis", 0x10, 7, fmt_F) \
-    INSTR(lw,    "lw",    0x11, 0, fmt_E) \
-    INSTR(lh,    "lh",    0x12, 0, fmt_E) \
-    INSTR(lhs,   "lhs",   0x13, 0, fmt_E) \
-    INSTR(lq,    "lq",    0x14, 0, fmt_E) \
-    INSTR(lqs,   "lqs",   0x15, 0, fmt_E) \
-    INSTR(lb,    "lb",    0x16, 0, fmt_E) \
-    INSTR(lbs,   "lbs",   0x17, 0, fmt_E) \
-    INSTR(sw,    "sw",    0x18, 0, fmt_E) \
-    INSTR(sh,    "sh",    0x19, 0, fmt_E) \
-    INSTR(sq,    "sq",    0x1a, 0, fmt_E) \
-    INSTR(sb,    "sb",    0x1b, 0, fmt_E) \
+    INSTR(lli,   "lli",   0x10, 0, fmt_F ) \
+    INSTR(llis,  "llis",  0x10, 1, fmt_F ) \
+    INSTR(lui,   "lui",   0x10, 2, fmt_F ) \
+    INSTR(luis,  "luis",  0x10, 3, fmt_F ) \
+    INSTR(lti,   "lti",   0x10, 4, fmt_F ) \
+    INSTR(ltis,  "ltis",  0x10, 5, fmt_F ) \
+    INSTR(ltui,  "ltui",  0x10, 6, fmt_F ) \
+    INSTR(ltuis, "ltuis", 0x10, 7, fmt_F ) \
+    INSTR(lw,    "lw",    0x11, 0, fmt_E ) \
+    INSTR(lh,    "lh",    0x12, 0, fmt_E ) \
+    INSTR(lhs,   "lhs",   0x13, 0, fmt_E ) \
+    INSTR(lq,    "lq",    0x14, 0, fmt_E ) \
+    INSTR(lqs,   "lqs",   0x15, 0, fmt_E ) \
+    INSTR(lb,    "lb",    0x16, 0, fmt_E ) \
+    INSTR(lbs,   "lbs",   0x17, 0, fmt_E ) \
+    INSTR(sw,    "sw",    0x18, 0, fmt_E ) \
+    INSTR(sh,    "sh",    0x19, 0, fmt_E ) \
+    INSTR(sq,    "sq",    0x1a, 0, fmt_E ) \
+    INSTR(sb,    "sb",    0x1b, 0, fmt_E ) \
     \
-    INSTR(cmpr,  "cmpr",  0x1e, 0, fmt_M) \
-    INSTR(cmpi,  "cmpi",  0x1f, 0, fmt_F) \
+    INSTR(cmpr,  "cmpr",  0x1e, 0, fmt_M ) \
+    INSTR(cmpi,  "cmpi",  0x1f, 0, fmt_F ) \
     \
-    INSTR(addr,  "addr",  0x20, 0, fmt_R) \
-    INSTR(addi,  "addi",  0x21, 0, fmt_M) \
-    INSTR(subr,  "subr",  0x22, 0, fmt_R) \
-    INSTR(subi,  "subi",  0x23, 0, fmt_M) \
-    INSTR(imulr, "imulr", 0x24, 0, fmt_R) \
-    INSTR(imuli, "imuli", 0x25, 0, fmt_M) \
-    INSTR(idivr, "idivr", 0x26, 0, fmt_R) \
-    INSTR(idivi, "idivi", 0x27, 0, fmt_M) \
-    INSTR(umulr, "umulr", 0x28, 0, fmt_R) \
-    INSTR(umuli, "umuli", 0x29, 0, fmt_M) \
-    INSTR(udivr, "udivr", 0x2a, 0, fmt_R) \
-    INSTR(udivi, "udivi", 0x2b, 0, fmt_M) \
-    INSTR(remr,  "remr",  0x2c, 0, fmt_R) \
-    INSTR(remi,  "remi",  0x2d, 0, fmt_M) \
-    INSTR(modr,  "modr",  0x2e, 0, fmt_R) \
-    INSTR(modi,  "modi",  0x2f, 0, fmt_M) \
+    INSTR(addr,  "addr",  0x20, 0, fmt_R ) \
+    INSTR(addi,  "addi",  0x21, 0, fmt_M ) \
+    INSTR(subr,  "subr",  0x22, 0, fmt_R ) \
+    INSTR(subi,  "subi",  0x23, 0, fmt_M ) \
+    INSTR(imulr, "imulr", 0x24, 0, fmt_R ) \
+    INSTR(imuli, "imuli", 0x25, 0, fmt_M ) \
+    INSTR(idivr, "idivr", 0x26, 0, fmt_R ) \
+    INSTR(idivi, "idivi", 0x27, 0, fmt_M ) \
+    INSTR(umulr, "umulr", 0x28, 0, fmt_R ) \
+    INSTR(umuli, "umuli", 0x29, 0, fmt_M ) \
+    INSTR(udivr, "udivr", 0x2a, 0, fmt_R ) \
+    INSTR(udivi, "udivi", 0x2b, 0, fmt_M ) \
+    INSTR(remr,  "remr",  0x2c, 0, fmt_R ) \
+    INSTR(remi,  "remi",  0x2d, 0, fmt_M ) \
+    INSTR(modr,  "modr",  0x2e, 0, fmt_R ) \
+    INSTR(modi,  "modi",  0x2f, 0, fmt_M ) \
     \
-    INSTR(andr,  "andr",  0x30, 0, fmt_R) \
-    INSTR(andi,  "andi",  0x31, 0, fmt_M) \
-    INSTR(orr,   "orr",   0x32, 0, fmt_R) \
-    INSTR(ori,   "ori",   0x33, 0, fmt_M) \
-    INSTR(norr,  "norr",  0x34, 0, fmt_R) \
-    INSTR(nori,  "nori",  0x35, 0, fmt_M) \
-    INSTR(xorr,  "xorr",  0x36, 0, fmt_R) \
-    INSTR(xori,  "xori",  0x37, 0, fmt_M) \
-    INSTR(shlr,  "shlr",  0x38, 0, fmt_R) \
-    INSTR(shli,  "shli",  0x39, 0, fmt_M) \
-    INSTR(asrr,  "asrr",  0x3a, 0, fmt_R) \
-    INSTR(asri,  "asri",  0x3b, 0, fmt_M) \
-    INSTR(lsrr,  "lsrr",  0x3c, 0, fmt_R) \
-    INSTR(lsri,  "lsri",  0x3d, 0, fmt_M) \
-    INSTR(bitr,  "bitr",  0x3e, 0, fmt_R) \
-    INSTR(biti,  "biti",  0x3f, 0, fmt_M) \
+    INSTR(andr,  "andr",  0x30, 0, fmt_R ) \
+    INSTR(andi,  "andi",  0x31, 0, fmt_M ) \
+    INSTR(orr,   "orr",   0x32, 0, fmt_R ) \
+    INSTR(ori,   "ori",   0x33, 0, fmt_M ) \
+    INSTR(norr,  "norr",  0x34, 0, fmt_R ) \
+    INSTR(nori,  "nori",  0x35, 0, fmt_M ) \
+    INSTR(xorr,  "xorr",  0x36, 0, fmt_R ) \
+    INSTR(xori,  "xori",  0x37, 0, fmt_M ) \
+    INSTR(shlr,  "shlr",  0x38, 0, fmt_R ) \
+    INSTR(shli,  "shli",  0x39, 0, fmt_M ) \
+    INSTR(asrr,  "asrr",  0x3a, 0, fmt_R ) \
+    INSTR(asri,  "asri",  0x3b, 0, fmt_M ) \
+    INSTR(lsrr,  "lsrr",  0x3c, 0, fmt_R ) \
+    INSTR(lsri,  "lsri",  0x3d, 0, fmt_M ) \
+    INSTR(bitr,  "bitr",  0x3e, 0, fmt_R ) \
+    INSTR(biti,  "biti",  0x3f, 0, fmt_M ) \
     \
     INSTR(fcmp16,  "fcmp.16",  0x40, 0, fmt_E) \
     INSTR(fto16,   "fto.16",   0x41, 0, fmt_E) \
@@ -187,53 +190,53 @@ typedef u8 aphel_imm_strat; enum {
     INSTR(fcnv64_32,  "fcnv.64.32",  0x4e, 0b0110, fmt_E) \
     INSTR(fnan64,  "fnan.64",  0x4f, 2, fmt_E) \
 \
-    INSTR(REAL_MAX, "",     0x00, 0, 0) \
+    INSTR(REAL_MAX, "",       0x00, 0, 0) \
 \
-    INSTR(PSUEDO_MIN, "",   0x00, 0, 0) \
+    INSTR(PSUEDO_MIN, "",     0x00, 0, 0) \
 \
-    INSTR(p_nop,   "nop",   0x00, 0, 0) \
-    INSTR(p_inv,   "inv",   0x00, 0, 0) \
-    INSTR(p_in,    "in",    0x00, 0, 0) \
-    INSTR(p_out,   "out",   0x00, 0, 0) \
-    INSTR(p_call,  "call",  0x00, 0, 0) \
-    INSTR(p_callr, "callr", 0x00, 0, 0) \
-    INSTR(p_mov,   "mov",   0x00, 0, 0) \
-    INSTR(p_li,    "li",    0x00, 0, 0) \
-    INSTR(p_cmp,   "cmp",   0x00, 0, 0) \
-    INSTR(p_add,   "add",   0x00, 0, 0) \
-    INSTR(p_sub,   "sub",   0x00, 0, 0) \
-    INSTR(p_imul,  "imul",  0x00, 0, 0) \
-    INSTR(p_idiv,  "idiv",  0x00, 0, 0) \
-    INSTR(p_umul,  "umul",  0x00, 0, 0) \
-    INSTR(p_udiv,  "udiv",  0x00, 0, 0) \
-    INSTR(p_mod,   "mod",   0x00, 0, 0) \
-    INSTR(p_rem,   "rem",   0x00, 0, 0) \
-    INSTR(p_and,   "and",   0x00, 0, 0) \
-    INSTR(p_or,    "or",    0x00, 0, 0) \
-    INSTR(p_nor,   "nor",   0x00, 0, 0) \
-    INSTR(p_not,   "not",   0x00, 0, 0) \
-    INSTR(p_xor,   "xor",   0x00, 0, 0) \
-    INSTR(p_shl,   "shl",   0x00, 0, 0) \
-    INSTR(p_asr,   "asr",   0x00, 0, 0) \
-    INSTR(p_lsr,   "lsr",   0x00, 0, 0) \
-    INSTR(p_bit,   "bit",   0x00, 0, 0) \
-    INSTR(p_setfs,   "setfs",   0x00, 0, 0) \
-    INSTR(p_setfz,   "setfz",   0x00, 0, 0) \
-    INSTR(p_setfcb,  "setfcb",  0x00, 0, 0) \
-    INSTR(p_setfcbu, "setfcbu", 0x00, 0, 0) \
-    INSTR(p_setfe,   "setfe",   0x00, 0, 0) \
-    INSTR(p_setfl,   "setfl",   0x00, 0, 0) \
-    INSTR(p_setflu,  "setflu",   0x00, 0, 0) \
+    INSTR(nop,     "nop",     0x00, 0, 0) \
+    INSTR(inv,     "inv",     0x00, 0, 0) \
+    INSTR(in,      "in",      0x00, 0, 0) \
+    INSTR(out,     "out",     0x00, 0, 0) \
+    INSTR(call,    "call",    0x00, 0, 0) \
+    INSTR(callr,   "callr",   0x00, 0, 0) \
+    INSTR(mov,     "mov",     0x00, 0, 0) \
+    INSTR(li,      "li",      0x00, 0, 0) \
+    INSTR(cmp,     "cmp",     0x00, 0, 0) \
+    INSTR(add,     "add",     0x00, 0, 0) \
+    INSTR(sub,     "sub",     0x00, 0, 0) \
+    INSTR(imul,    "imul",    0x00, 0, 0) \
+    INSTR(idiv,    "idiv",    0x00, 0, 0) \
+    INSTR(umul,    "umul",    0x00, 0, 0) \
+    INSTR(udiv,    "udiv",    0x00, 0, 0) \
+    INSTR(mod,     "mod",     0x00, 0, 0) \
+    INSTR(rem,     "rem",     0x00, 0, 0) \
+    INSTR(and,     "and",     0x00, 0, 0) \
+    INSTR(or,      "or",      0x00, 0, 0) \
+    INSTR(nor,     "nor",     0x00, 0, 0) \
+    INSTR(not,     "not",     0x00, 0, 0) \
+    INSTR(xor,     "xor",     0x00, 0, 0) \
+    INSTR(shl,     "shl",     0x00, 0, 0) \
+    INSTR(asr,     "asr",     0x00, 0, 0) \
+    INSTR(lsr,     "lsr",     0x00, 0, 0) \
+    INSTR(bit,     "bit",     0x00, 0, 0) \
+    INSTR(setfs,   "setfs",   0x00, 0, 0) \
+    INSTR(setfz,   "setfz",   0x00, 0, 0) \
+    INSTR(setfcb,  "setfcb",  0x00, 0, 0) \
+    INSTR(setfcbu, "setfcbu", 0x00, 0, 0) \
+    INSTR(setfe,   "setfe",   0x00, 0, 0) \
+    INSTR(setfl,   "setfl",   0x00, 0, 0) \
+    INSTR(setflu,  "setflu",  0x00, 0, 0) \
 \
-    INSTR(p_loc,   "loc",   0x00, 0, 0) \
-    INSTR(p_align, "align", 0x00, 0, 0) \
-    INSTR(p_skip,  "skip",  0x00, 0, 0) \
-    INSTR(p_byte,  "byte",  0x00, 0, 0) \
-    INSTR(p_d8,    "d8",    0x00, 0, 0) \
-    INSTR(p_d16,   "d16",   0x00, 0, 0) \
-    INSTR(p_d32,   "d32",   0x00, 0, 0) \
-    INSTR(p_d64,   "d64",   0x00, 0, 0) \
-    INSTR(p_utf8,  "utf8",  0x00, 0, 0) \
+    INSTR(loc,   "loc",   0x00, 0, 0) \
+    INSTR(align, "align", 0x00, 0, 0) \
+    INSTR(skip,  "skip",  0x00, 0, 0) \
+    INSTR(byte,  "byte",  0x00, 0, 0) \
+    INSTR(d8,    "d8",    0x00, 0, 0) \
+    INSTR(d16,   "d16",   0x00, 0, 0) \
+    INSTR(d32,   "d32",   0x00, 0, 0) \
+    INSTR(d64,   "d64",   0x00, 0, 0) \
+    INSTR(utf8,  "utf8",  0x00, 0, 0) \
 \
     INSTR(PSUEDO_MAX, "",  0x00, 0, 0) \
 
