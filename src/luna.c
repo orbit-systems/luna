@@ -46,7 +46,8 @@ int main(int argc, char** argv) {
 
     parse_file(&source);
     check_definitions(&source);
-
+    u64 size = trace_size(&source);
+    printf("final size: %zu\n", size);
 
     // printf("SYMBOL TABLE\n");
     // u64 max_sym_len = source.symtab.at[0]->name.len;

@@ -51,7 +51,6 @@ typedef u8 element_kind; enum {
     ek_invalid,
     ek_label,
     ek_instruction,
-    ek_substream, // for efficient macro expansions
 };
 
 typedef struct {
@@ -74,9 +73,9 @@ typedef struct element {
             aphel_inst_code code;
             u8 special; // some extra metadata
         } instr;
-        struct {
-            element_list elems;
-        } substream;
+        // struct {
+        //     element_list elems;
+        // } substream;
     };
     element_kind kind;
 } element;

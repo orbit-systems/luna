@@ -780,8 +780,8 @@ void parse_file(luna_file* restrict f) {
             case aphel_d16:
             case aphel_d32:
             case aphel_d64:
-                if (check_args(e, (arg_kind[]){ak_literal}, 1)) {
-                } else if (check_args(e, (arg_kind[]){ak_literal, ak_literal}, 2)) {
+                if (check_args(e, (arg_kind[]){ak_lit_or_sym}, 1)) {
+                } else if (check_args(e, (arg_kind[]){ak_lit_or_sym, ak_literal}, 2)) {
                 } else error_at_elem(f, e, "invalid arguments for '"str_fmt"'", str_arg(f->tokens.at[e->loc.start].text));
                 break;
             case aphel_utf8:

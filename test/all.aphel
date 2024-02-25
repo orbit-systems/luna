@@ -4,10 +4,11 @@ loc 10, 0
 align 4, 0
 byte 1
 byte 1, 0
-d8 10, 2
-d16 10, 2
-d32 10, 2
+align 8
 d64 10, 2
+d32 10, 2
+d16 10, 2
+d8 10, 2
 skip 100
 utf8 "hello there"
 

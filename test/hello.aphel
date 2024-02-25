@@ -79,7 +79,3 @@ hello_world_text:
 
 loc 0x1FFFF
 stack:
-
-li ra, 0.1h
-li ra, 0.1f
-li ra, 0.1d
