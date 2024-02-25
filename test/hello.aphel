@@ -10,7 +10,6 @@ IVT:
     bra start
 
 loc 2048
-align 4
 start:
     ; fill interrupt handlers
     ; for (int i = 0; i < 2048; i+=8) {
@@ -67,9 +66,6 @@ print_cstring: ; (charptr: ra) -> (ra)
     pop  rb
     .end:
     ret
-
-    
-
 interrupt_handler_text:
     utf8 "[interrupt]\n\0"
 setup_failed_text:
@@ -78,4 +74,5 @@ hello_world_text:
     utf8 "Hello world!\n\0"
 
 loc 0x1FFFF
+align 8
 stack:

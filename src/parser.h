@@ -118,15 +118,8 @@ int ascii_to_digit_val(luna_file* restrict f, char c, u8 base);
 
 #define str_from_tokens(start, end) ((string){(start).text.raw, (end).text.raw - (start).text.raw + (end).text.len})
 
-#define error_at_elem(f, elem, message, ...) do { \
-    if (elem->kind == ek_instruction) { \
-        u64 offset = elem->instr.args.len; \
-        if (offset > 0) offset = offset * 2 - 1; \
-        error_at_string(f->path, f->text, \
-            str_from_tokens(f->tokens.at[elem->loc.start], f->tokens.at[elem->loc.start + offset]), \
-            message __VA_OPT__(,) __VA_ARGS__); \
-    } \
-} while (0)
+#define error_at_elem(f, elem, message, ...) \
+    error_at_string(f->path, f->text, f->tokens.at[elem->loc.start].text, message __VA_OPT__(,) __VA_ARGS__)
 
 // assuming the element is of type ek_instruction
 bool check_args(element* restrict e, arg_kind args[], size_t arglen);
