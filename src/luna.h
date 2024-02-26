@@ -13,6 +13,7 @@ typedef struct flag_set_s {
     string input_path;
     string output_path;
     bool print_timings;
+    bool dump_symtab;
 } flag_set;
 
 cmd_arg make_argument(char* s);

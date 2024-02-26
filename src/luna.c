@@ -48,7 +48,6 @@ int main(int argc, char** argv) {
     parse_file(&source);
     check_definitions(&source);
     u64 size = trace_size(&source);
-    printf("final size: %zu\n", size);
 
     void* bin = malloc(size);
     memset(bin, 0, size);
@@ -69,19 +68,21 @@ int main(int argc, char** argv) {
     fs_close(&output);
     fs_drop(&output);
 
-    // printf("SYMBOL TABLE\n");
-    // u64 max_sym_len = source.symtab.at[0]->name.len;
-    // FOR_URANGE(i, 1, source.symtab.len) {
-    //     max_sym_len = max(max_sym_len, source.symtab.at[i]->name.len);
-    // }
-    // FOR_URANGE(i, 0, source.symtab.len) {
-    //     printf("    "str_fmt, str_arg(source.symtab.at[i]->name));
+    printf("assembled '"str_fmt"' with size %zu bytes\n", str_arg(luna_flags.output_path), size);
 
-    //     FOR_URANGE(j, 0, max_sym_len - source.symtab.at[i]->name.len + 4) putchar(' ');
-    //     printf("%s  %16lx\n",
-    //         source.symtab.at[i]->defined ? "def  " : "undef", source.symtab.at[i]->value
-    //     );
-    // }
+    if (luna_flags.dump_symtab) {
+        u64 max_sym_len = source.symtab.at[0]->name.len;
+        FOR_URANGE(i, 1, source.symtab.len) {
+            max_sym_len = max(max_sym_len, source.symtab.at[i]->name.len);
+        }
+        FOR_URANGE(i, 0, source.symtab.len) {
+            printf("    "str_fmt, str_arg(source.symtab.at[i]->name));
+
+            FOR_URANGE(j, 0, max_sym_len - source.symtab.at[i]->name.len + 4) putchar(' ');
+
+            printf(" %16lx\n", source.symtab.at[i]->value);
+        }
+    }    
 
     arena_delete(&source.elem_alloca);
     arena_delete(&source.str_alloca);
@@ -94,6 +95,7 @@ void print_help() {
     printf("-o:(path)           specify an output path\n");
     printf("-help               display this text\n\n");
     printf("-timings            print assembler stage timings\n");
+    printf("-symtab             print the symbol table after successful assembly");
 }
 
 cmd_arg make_argument(char* s) {
@@ -150,6 +152,8 @@ void load_arguments(int argc, char* argv[], flag_set* fl) {
             fl->output_path = a.val;
         } else if (string_eq(a.key, to_string("-timings"))) {
             fl->print_timings = true;
+        } else if (string_eq(a.key, to_string("-symtab"))) {
+            fl->dump_symtab = true;
         } else {
             general_error("unrecognized option \""str_fmt"\"", str_arg(a.key));
         }

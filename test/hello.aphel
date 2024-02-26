@@ -28,11 +28,6 @@ start:
     li   fp, STACK
     mov  sp, fp
 
-    li   ra, 1234
-    push ra
-    li   ra, 0
-    pop  ra
-
     li   ra, hello_world_text
     call rb, print_cstring
 
