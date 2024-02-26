@@ -231,7 +231,7 @@ void parse_file(luna_file* restrict f) {
             switch (e->instr.code) {
             case aphel_nop:
                 if (check_args(e, NULL, 0)) {
-                    e->instr.code = aphel_add;
+                    e->instr.code = aphel_addr;
                     da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = reg_rz}));
                     da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = reg_rz}));
                     da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = reg_rz}));
@@ -659,7 +659,7 @@ void parse_file(luna_file* restrict f) {
                     error_at_elem(f, e, "invalid arguments for '"str_fmt"'", str_arg(f->tokens.at[e->loc.start].text)); break;
             case aphel_not:
                 if (check_args(e, (arg_kind[]){ak_register, ak_register}, 2)) {
-                    e->instr.code = aphel_nor;
+                    e->instr.code = aphel_norr;
                     da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = reg_rz}));
                 } else error_at_elem(f, e, "invalid arguments for '"str_fmt"'", str_arg(f->tokens.at[e->loc.start].text));
                 break;
