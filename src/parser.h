@@ -40,7 +40,7 @@ typedef struct argument {
         symbol*   as_symbol;
         aphel_reg as_reg;
         i64       as_literal;
-        char*     as_str;
+        string    as_str;
     };
     u8 bit_shift_right;
     arg_kind kind;
@@ -106,7 +106,7 @@ symbol* symbol_find(luna_file* restrict f, string name);
 symbol* symbol_find_or_create(luna_file* restrict f, string name);
 void expand_local_sym(string* restrict sym, symbol* restrict last_nonlocal, arena* restrict alloca);
 
-char* string_lit_value(luna_file* restrict f);
+string string_lit_value(luna_file* restrict f);
 i64 int_lit_value(luna_file* restrict f);
 f64 float_lit_value(luna_file* restrict f);
 i64 char_lit_value(luna_file* restrict f);

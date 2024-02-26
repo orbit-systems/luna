@@ -302,7 +302,12 @@ void parse_file(luna_file* restrict f) {
                     error_at_elem(f, e, "invalid arguments for '"str_fmt"'", str_arg(f->tokens.at[e->loc.start].text));
                 
                 aphel_reg rs = e->instr.args.at[0].as_reg;
+                // cursed
+                e = generate_li(f, e);
+                da_append(&f->elems, e);
+
                 e = new_element(&f->elem_alloca, ek_instruction);
+                e->instr.code = aphel_jal;
                 da_init(&e->instr.args, 2);
                 da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rs}));
                 da_append(&e->instr.args, ((argument){.kind = ak_literal, .as_literal = 0}));
@@ -319,7 +324,7 @@ void parse_file(luna_file* restrict f) {
                 da_append(&f->elems, e);
 
                 e = new_element(&f->elem_alloca, ek_instruction);
-                e->instr.code = aphel_jal;
+                e->instr.code = aphel_jalr;
                 da_init(&e->instr.args, 2);
                 da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rs}));
                 da_append(&e->instr.args, ((argument){.kind = ak_literal, .as_literal = 0}));
@@ -378,7 +383,7 @@ void parse_file(luna_file* restrict f) {
             case aphel_mov:
                 if (!check_args(e, (arg_kind[]){ak_register, ak_register}, 2))
                     error_at_elem(f, e, "invalid arguments for '"str_fmt"'", str_arg(f->tokens.at[e->loc.start].text));
-                e->instr.code = aphel_or;
+                e->instr.code = aphel_orr;
                 da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = reg_rz}));
                 break;
             case aphel_li:
@@ -776,6 +781,10 @@ void parse_file(luna_file* restrict f) {
                 break;
             case aphel_loc:
             case aphel_align:
+                if (check_args(e, (arg_kind[]){ak_literal}, 1)) {
+                } else if (check_args(e, (arg_kind[]){ak_literal, ak_literal}, 2)) {
+                } else error_at_elem(f, e, "invalid arguments for '"str_fmt"'", str_arg(f->tokens.at[e->loc.start].text));
+                break;
             case aphel_d8:
             case aphel_d16:
             case aphel_d32:
@@ -789,7 +798,7 @@ void parse_file(luna_file* restrict f) {
                     error_at_elem(f, e, "invalid arguments for '"str_fmt"'", str_arg(f->tokens.at[e->loc.start].text));
                 break;
             default:
-                error_at_elem(f, e, "unfinished or severely borked");
+                error_at_elem(f, e, "what? (shouldnt happen, ask sandwichman about this)");
             }
 
 
@@ -1016,9 +1025,9 @@ i64 int_lit_value(luna_file* restrict f) {
     return val * (is_negative ? -1 : 1);
 }
 
-char* string_lit_value(luna_file* restrict f) {
+string string_lit_value(luna_file* restrict f) {
     string t = current_token.text;
-    char* val = NULL;
+    string val = NULL_STR;
     size_t val_len = 0;
 
     // trace string, figure out how long it needs to be
@@ -1053,33 +1062,33 @@ char* string_lit_value(luna_file* restrict f) {
     }
 
     // allocate
-    val = arena_alloc(&f->str_alloca, val_len + 1, 1);
-    val[val_len] = '\0';
+    val.raw = arena_alloc(&f->str_alloca, val_len, 1);
+    val.len = val_len;
 
     // fill in string with correct bytes
     u64 val_i = 0;
     FOR_URANGE(i, 1, t.len-1) {
         if (t.raw[i] != '\\') {
-            val[val_i] = t.raw[i];
+            val.raw[val_i] = t.raw[i];
             val_i++;
             continue;
         }
         i++;
         switch (t.raw[i]) {
-        case '0': val[val_i] = '\0'; break;
-        case 'a': val[val_i] = '\a'; break;
-        case 'b': val[val_i] = '\b'; break;
-        case 'e': val[val_i] = '\e'; break;
-        case 'f': val[val_i] = '\f'; break;
-        case 'n': val[val_i] = '\n'; break;
-        case 'r': val[val_i] = '\r'; break;
-        case 't': val[val_i] = '\t'; break;
-        case 'v': val[val_i] = '\v'; break;
-        case '\\': val[val_i] = '\\'; break;
-        case '\"': val[val_i] = '\"'; break;
-        case '\'': val[val_i] = '\''; break;
+        case '0': val.raw[val_i] = '\0';  break;
+        case 'a': val.raw[val_i] = '\a';  break;
+        case 'b': val.raw[val_i] = '\b';  break;
+        case 'e': val.raw[val_i] = '\e';  break;
+        case 'f': val.raw[val_i] = '\f';  break;
+        case 'n': val.raw[val_i] = '\n';  break;
+        case 'r': val.raw[val_i] = '\r';  break;
+        case 't': val.raw[val_i] = '\t';  break;
+        case 'v': val.raw[val_i] = '\v';  break;
+        case '\\': val.raw[val_i] = '\\'; break;
+        case '\"': val.raw[val_i] = '\"'; break;
+        case '\'': val.raw[val_i] = '\''; break;
         case 'x':
-            val[val_i] = ascii_to_digit_val(f, t.raw[i+1], 16) * 0x10 + ascii_to_digit_val(f, t.raw[i+2], 16);
+            val.raw[val_i] = ascii_to_digit_val(f, t.raw[i+1], 16) * 0x10 + ascii_to_digit_val(f, t.raw[i+2], 16);
             i += 2;
             break;
         default:

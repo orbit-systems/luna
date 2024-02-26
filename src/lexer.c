@@ -139,6 +139,7 @@ token_type scan_ident_or_keyword(lexer* restrict lex) {
 
     if (string_eq(word, to_string("."))) return tt_period;
 
+    if (string_eq(word, to_string("rz"))) return tt_register_rz;
     if (string_eq(word, to_string("ra"))) return tt_register_ra;
     if (string_eq(word, to_string("rb"))) return tt_register_rb;
     if (string_eq(word, to_string("rc"))) return tt_register_rc;

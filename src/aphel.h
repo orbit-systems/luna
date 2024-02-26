@@ -137,58 +137,56 @@ typedef u8 imm_strategy; enum {
     INSTR(biti,  "biti",  0x3f, 0, fmt_M ) \
     \
     INSTR(fcmp16,  "fcmp.16",  0x40, 0, fmt_E) \
+    INSTR(fcmp32,  "fcmp.32",  0x40, 1, fmt_E) \
+    INSTR(fcmp64,  "fcmp.64",  0x40, 2, fmt_E) \
     INSTR(fto16,   "fto.16",   0x41, 0, fmt_E) \
+    INSTR(fto32,   "fto.32",   0x41, 1, fmt_E) \
+    INSTR(fto64,   "fto.64",   0x41, 2, fmt_E) \
     INSTR(ffrom16, "ffrom.16", 0x42, 0, fmt_E) \
+    INSTR(ffrom32, "ffrom.32", 0x42, 1, fmt_E) \
+    INSTR(ffrom64, "ffrom.64", 0x42, 2, fmt_E) \
     INSTR(fneg16,  "fneg.16",  0x43, 0, fmt_E) \
+    INSTR(fneg32,  "fneg.32",  0x43, 1, fmt_E) \
+    INSTR(fneg64,  "fneg.64",  0x43, 2, fmt_E) \
     INSTR(fabs16,  "fabs.16",  0x44, 0, fmt_E) \
+    INSTR(fabs32,  "fabs.32",  0x44, 1, fmt_E) \
+    INSTR(fabs64,  "fabs.64",  0x44, 2, fmt_E) \
     INSTR(fadd16,  "fadd.16",  0x45, 0, fmt_E) \
+    INSTR(fadd32,  "fadd.32",  0x45, 1, fmt_E) \
+    INSTR(fadd64,  "fadd.64",  0x45, 2, fmt_E) \
     INSTR(fsub16,  "fsub.16",  0x46, 0, fmt_E) \
+    INSTR(fsub32,  "fsub.32",  0x46, 1, fmt_E) \
+    INSTR(fsub64,  "fsub.64",  0x46, 2, fmt_E) \
     INSTR(fmul16,  "fmul.16",  0x47, 0, fmt_E) \
+    INSTR(fmul32,  "fmul.32",  0x47, 1, fmt_E) \
+    INSTR(fmul64,  "fmul.64",  0x47, 2, fmt_E) \
     INSTR(fdiv16,  "fdiv.16",  0x48, 0, fmt_E) \
+    INSTR(fdiv32,  "fdiv.32",  0x48, 1, fmt_E) \
+    INSTR(fdiv64,  "fdiv.64",  0x48, 2, fmt_E) \
     INSTR(fma16,   "fma.16",   0x49, 0, fmt_E) \
+    INSTR(fma32,   "fma.32",   0x49, 1, fmt_E) \
+    INSTR(fma64,   "fma.64",   0x49, 2, fmt_E) \
     INSTR(fsqrt16, "fsqrt.16", 0x4a, 0, fmt_E) \
+    INSTR(fsqrt32, "fsqrt.32", 0x4a, 1, fmt_E) \
+    INSTR(fsqrt64, "fsqrt.64", 0x4a, 2, fmt_E) \
     INSTR(fmin16,  "fmin.16",  0x4b, 0, fmt_E) \
+    INSTR(fmin32,  "fmin.32",  0x4b, 1, fmt_E) \
+    INSTR(fmin64,  "fmin.64",  0x4b, 2, fmt_E) \
     INSTR(fmax16,  "fmax.16",  0x4c, 0, fmt_E) \
+    INSTR(fmax32,  "fmax.32",  0x4c, 1, fmt_E) \
+    INSTR(fmax64,  "fmax.64",  0x4c, 2, fmt_E) \
     INSTR(fsat16,  "fsat.16",  0x4d, 0, fmt_E) \
+    INSTR(fsat32,  "fsat.32",  0x4d, 1, fmt_E) \
+    INSTR(fsat64,  "fsat.64",  0x4d, 2, fmt_E) \
+    INSTR(fnan16,  "fnan.16",  0x4f, 0, fmt_E) \
+    INSTR(fnan32,  "fnan.32",  0x4f, 1, fmt_E) \
+    INSTR(fnan64,  "fnan.64",  0x4f, 2, fmt_E) \
     INSTR(fcnv16_32,  "fcnv.16.32",  0x4e, 0b0100, fmt_E) \
     INSTR(fcnv16_64,  "fcnv.16.64",  0x4e, 0b1000, fmt_E) \
-    INSTR(fnan16,  "fnan.16",  0x4f, 0, fmt_E) \
-\
-    INSTR(fcmp32,  "fcmp.32",  0x40, 1, fmt_E) \
-    INSTR(fto32,   "fto.32",   0x41, 1, fmt_E) \
-    INSTR(ffrom32, "ffrom.32", 0x42, 1, fmt_E) \
-    INSTR(fneg32,  "fneg.32",  0x43, 1, fmt_E) \
-    INSTR(fabs32,  "fabs.32",  0x44, 1, fmt_E) \
-    INSTR(fadd32,  "fadd.32",  0x45, 1, fmt_E) \
-    INSTR(fsub32,  "fsub.32",  0x46, 1, fmt_E) \
-    INSTR(fmul32,  "fmul.32",  0x47, 1, fmt_E) \
-    INSTR(fdiv32,  "fdiv.32",  0x48, 1, fmt_E) \
-    INSTR(fma32,   "fma.32",   0x49, 1, fmt_E) \
-    INSTR(fsqrt32, "fsqrt.32", 0x4a, 1, fmt_E) \
-    INSTR(fmin32,  "fmin.32",  0x4b, 1, fmt_E) \
-    INSTR(fmax32,  "fmax.32",  0x4c, 1, fmt_E) \
-    INSTR(fsat32,  "fsat.32",  0x4d, 1, fmt_E) \
     INSTR(fcnv32_16,  "fcnv.32.16",  0x4e, 0b0001, fmt_E) \
     INSTR(fcnv32_64,  "fcnv.32.64",  0x4e, 0b1001, fmt_E) \
-    INSTR(fnan32,  "fnan.32",  0x4f, 1, fmt_E) \
-\
-    INSTR(fcmp64,  "fcmp.64",  0x40, 2, fmt_E) \
-    INSTR(fto64,   "fto.64",   0x41, 2, fmt_E) \
-    INSTR(ffrom64, "ffrom.64", 0x42, 2, fmt_E) \
-    INSTR(fneg64,  "fneg.64",  0x43, 2, fmt_E) \
-    INSTR(fabs64,  "fabs.64",  0x44, 2, fmt_E) \
-    INSTR(fadd64,  "fadd.64",  0x45, 2, fmt_E) \
-    INSTR(fsub64,  "fsub.64",  0x46, 2, fmt_E) \
-    INSTR(fmul64,  "fmul.64",  0x47, 2, fmt_E) \
-    INSTR(fdiv64,  "fdiv.64",  0x48, 2, fmt_E) \
-    INSTR(fma64,   "fma.64",   0x49, 2, fmt_E) \
-    INSTR(fsqrt64, "fsqrt.64", 0x4a, 2, fmt_E) \
-    INSTR(fmin64,  "fmin.64",  0x4b, 2, fmt_E) \
-    INSTR(fmax64,  "fmax.64",  0x4c, 2, fmt_E) \
-    INSTR(fsat64,  "fsat.64",  0x4d, 2, fmt_E) \
     INSTR(fcnv64_16,  "fcnv.64.16",  0x4e, 0b0010, fmt_E) \
     INSTR(fcnv64_32,  "fcnv.64.32",  0x4e, 0b0110, fmt_E) \
-    INSTR(fnan64,  "fnan.64",  0x4f, 2, fmt_E) \
 \
     INSTR(REAL_MAX, "",       0x00, 0, 0) \
 \
@@ -288,4 +286,4 @@ typedef union {
         u32 imm    : 20;
         u32 func   : 4;
     } B;
-} aphel_instr;
+} aphel_instruction;

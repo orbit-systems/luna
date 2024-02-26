@@ -52,19 +52,35 @@ int main(int argc, char** argv) {
     void* bin = malloc(size);
     memset(bin, 0, size);
 
-    printf("SYMBOL TABLE\n");
-    u64 max_sym_len = source.symtab.at[0]->name.len;
-    FOR_URANGE(i, 1, source.symtab.len) {
-        max_sym_len = max(max_sym_len, source.symtab.at[i]->name.len);
+    emit_binary(&source, bin);
+    
+    fs_file output;
+    if (fs_exists(luna_flags.output_path)) {
+        fs_get(luna_flags.output_path, &output);
+        fs_delete(&output);
+        fs_drop(&output);
     }
-    FOR_URANGE(i, 0, source.symtab.len) {
-        printf("    "str_fmt, str_arg(source.symtab.at[i]->name));
+    fs_create(luna_flags.output_path, oft_regular, &output);
+    fs_open(&output, "wb");
+    if (!fs_write(&output, bin, size)) {
+        general_error("could not write to output file");
+    }
+    fs_close(&output);
+    fs_drop(&output);
 
-        FOR_URANGE(j, 0, max_sym_len - source.symtab.at[i]->name.len + 4) putchar(' ');
-        printf("%s  %16lx\n",
-            source.symtab.at[i]->defined ? "def  " : "undef", source.symtab.at[i]->value
-        );
-    }
+    // printf("SYMBOL TABLE\n");
+    // u64 max_sym_len = source.symtab.at[0]->name.len;
+    // FOR_URANGE(i, 1, source.symtab.len) {
+    //     max_sym_len = max(max_sym_len, source.symtab.at[i]->name.len);
+    // }
+    // FOR_URANGE(i, 0, source.symtab.len) {
+    //     printf("    "str_fmt, str_arg(source.symtab.at[i]->name));
+
+    //     FOR_URANGE(j, 0, max_sym_len - source.symtab.at[i]->name.len + 4) putchar(' ');
+    //     printf("%s  %16lx\n",
+    //         source.symtab.at[i]->defined ? "def  " : "undef", source.symtab.at[i]->value
+    //     );
+    // }
 
     arena_delete(&source.elem_alloca);
     arena_delete(&source.str_alloca);
@@ -89,6 +105,18 @@ cmd_arg make_argument(char* s) {
     return (cmd_arg){to_string(s), NULL_STR};
 }
 
+// stole this from stackoverflow
+void strip_ext(char *fname) {
+    char *end = fname + strlen(fname);
+    while (end > fname && *end != '.' && *end != '\\' && *end != '/') {
+        --end;
+    }
+    if ((end > fname && *end == '.') &&
+        (*(end - 1) != '\\' && *(end - 1) != '/')) {
+        *end = '\0';
+    }  
+}
+
 void load_arguments(int argc, char* argv[], flag_set* fl) {
     if (argc < 2) {
         print_help();
@@ -96,6 +124,7 @@ void load_arguments(int argc, char* argv[], flag_set* fl) {
     }
 
     *fl = (flag_set){0};
+    fl->output_path.raw = NULL;
 
     cmd_arg input_directory_arg = make_argument(argv[1]);
     if (string_eq(input_directory_arg.key, to_string("-help"))) {
@@ -106,8 +135,6 @@ void load_arguments(int argc, char* argv[], flag_set* fl) {
         general_error("expected an input path, got \"%s\"", argv[1]);
     }
     fl->input_path = input_directory_arg.key;
-
-    if (argc <= 2) return;
 
     int flag_start_index = 2;
     FOR_RANGE(i, flag_start_index, argc) {
@@ -125,5 +152,13 @@ void load_arguments(int argc, char* argv[], flag_set* fl) {
         } else {
             general_error("unrecognized option \""str_fmt"\"", str_arg(a.key));
         }
+    }
+
+    if (fl->output_path.raw == NULL) {
+        char* output_path = clone_to_cstring(fl->input_path);
+        strip_ext(output_path);
+        fl->output_path = to_string(output_path);
+        fl->output_path = string_concat(fl->output_path, to_string(".bin"));
+
     }
 }

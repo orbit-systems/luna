@@ -38,11 +38,11 @@ some_function:
 
 In addition to ISA-defined pseudo-instructions, these are supplied:
 
-- `loc (int), [fill]` - skip forward until address `(int)`, filling the empty space will `[fill]`.
+- `loc (int), [fill]` - set the address cursor to `(int)`, filling the empty space will `[fill]`. Empty space is not overwritten if `[fill]` is not present OR if `loc` sets the address cursor backwards.
 
-- `align (int), [fill]` - Insert byte `[fill]`(defaults to 0) until the cursor position is aligned to a multiple of `(int)`. A warning will be generated if the argument is not a power of two. Real instructions are automatically aligned to multiples of 4.
+- `align (int), [fill]` - Insert byte `[fill]` until the cursor position is aligned to a multiple of `(int)`. An error will be generated if the argument is not a power of two. If `[fill]` is not present, empty space will not be overwritten.
 
-- `byte (val), [count]` - Alias for `d8`
+- `byte (val), [count]` - Alias for `d8`.
 
 - `d8 (val), [count]` - Repeat an 8-bit value `(val)`, `[count]`(default to 1) # of times.
 

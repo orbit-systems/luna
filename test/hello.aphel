@@ -1,7 +1,6 @@
 
 define OUT_PORT, 10
-
-li ra, -3.0h
+define STACK, 0x2000
 
 loc 0
 
@@ -26,8 +25,9 @@ start:
     ; IVT filled
 
     ; set up stack
-    li   fp, stack
-    li   sp, stack
+    li   fp, STACK
+    mov  sp, fp
+
     li   ra, 1234
     push ra
     li   ra, 0
@@ -38,7 +38,6 @@ start:
 
     .spin:
         bra .spin
-
 
 setup_failed:
     li   ra, setup_failed_text
@@ -57,22 +56,19 @@ interrupt_handler:
 print_cstring: ; (charptr: ra) -> (ra)
     push rb
     .loop:
-        lb  rb, ra
-        cmp rb, 0
-        beq .end
+        lbs rb, ra
+        cmp rb, '\0'
+        bez .end
         out OUT_PORT, rb
         add ra, ra, 1
         bra .loop
-    pop  rb
     .end:
+    pop  rb
     ret
+
 interrupt_handler_text:
     utf8 "[interrupt]\n\0"
 setup_failed_text:
     utf8 "setup failed\n\0"
 hello_world_text:
     utf8 "Hello world!\n\0"
-
-loc 0x1FFFF
-align 8
-stack:
