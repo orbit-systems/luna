@@ -893,7 +893,7 @@ i64 char_lit_value(luna_file* restrict f) {
 
     if (t.raw[1] != '\\') { // trivial case
         if (t.len > 3) error_at_token(f, current_token, "char literal too long");
-        return t.raw[2];
+        return (i64)(u8)t.raw[1];
     }
 
     switch(t.raw[2]) {

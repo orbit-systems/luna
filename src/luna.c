@@ -14,6 +14,7 @@
 flag_set luna_flags;
 
 int main(int argc, char** argv) {
+
     load_arguments(argc, argv, &luna_flags);
 
     if (!fs_exists(luna_flags.input_path)) {
