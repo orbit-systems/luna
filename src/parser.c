@@ -410,7 +410,7 @@ void parse_file(luna_file* restrict f) {
             case aphel_lbs:
                 if (check_args(e, (arg_kind[]){ak_register, ak_register}, 2)) {
                 } else if (check_args(e, (arg_kind[]){ak_register, ak_register, ak_lit_or_sym}, 3)) {
-                } else if (check_args(e, (arg_kind[]){ak_register, ak_register, ak_lit_or_sym, ak_register, ak_lit_or_sym}, 4)) {
+                } else if (check_args(e, (arg_kind[]){ak_register, ak_register, ak_lit_or_sym, ak_register}, 4)) {
                 } else if (check_args(e, (arg_kind[]){ak_register, ak_register, ak_lit_or_sym, ak_register, ak_lit_or_sym}, 5)) {
                 } else error_at_elem(f, e, "invalid arguments for '"str_fmt"'", str_arg(f->tokens.at[e->loc.start].text));
                 break;
