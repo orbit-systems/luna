@@ -110,7 +110,6 @@ void parse_file(luna_file* restrict f) {
             continue;
         }
 
-        // weed out some directives
         if current_eq("define") {
             advance_token;
 

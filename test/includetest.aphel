@@ -1,0 +1,5 @@
+d64 1
+
+include "test/includetest2.aphel"
+
+d64 10

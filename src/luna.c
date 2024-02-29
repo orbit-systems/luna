@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
         general_error("failed to read file \""str_fmt"\"", str_arg(luna_flags.input_path));
     }
 
-    lexer input_lexer = new_lexer(luna_flags.input_path, input_text);
+    lexer input_lexer = new_lexer(luna_flags.input_path, input_text, (da(string)){0});
     construct_token_buffer(&input_lexer);
 
     luna_file source = {0};

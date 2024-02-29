@@ -113,6 +113,7 @@ typedef struct token_s {
 } token;
 
 da_typedef(token);
+da_typedef(string);
 
 typedef struct lexer_s {
     string src;
@@ -120,8 +121,9 @@ typedef struct lexer_s {
     da(token) buffer;
     u64 cursor;
     char current_char;
+    da(string) included;
 } lexer;
 
-lexer new_lexer(string path, string src);
+lexer new_lexer(string path, string src, da(string) incl);
 void construct_token_buffer(lexer* lex);
 void append_next_token(lexer* lex);

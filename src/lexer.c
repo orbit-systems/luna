@@ -29,21 +29,37 @@ token_type scan_number(lexer* restrict lex);
 token_type scan_string_or_char(lexer* restrict lex);
 token_type scan_operator(lexer* restrict lex);
 
+string lex_string_lit_value(token* restrict tok);
+
 char* token_type_str[] = {
 #define TOKEN(enum, str) str,
     TOKEN_LIST
 #undef TOKEN
 };
 
-lexer new_lexer(string path, string src) {
+lexer new_lexer(string path, string src, da(string) incl) {
     lexer lex = {0};
     lex.path = path;
     lex.src = src;
     lex.current_char = src.raw[0];
     lex.cursor = 0;
+    lex.included = incl;
+    if (incl.at == NULL) {
+        da_init(&lex.included, 1);
+    }
+    da_append(&lex.included, path);
     da_init(&lex.buffer, src.len/3.5);
     return lex;
 }
+
+bool has_been_included(lexer* restrict lex, string path) {
+    FOR_URANGE(i, 0, lex->included.len) {
+        if (string_eq(lex->included.at[i], path)) return true;
+    }
+    return false;
+}
+
+#define top_token(l) ((l)->buffer.at[(l)->buffer.len-1])
 
 void construct_token_buffer(lexer* restrict lex) {
     if (lex == NULL || is_null_str(lex->src) || is_null_str(lex->path))
@@ -51,7 +67,52 @@ void construct_token_buffer(lexer* restrict lex) {
 
     do {
         append_next_token(lex);
-    } while (lex->buffer.at[lex->buffer.len-1].type != tt_EOF);
+        if (top_token(lex).type == tt_identifier && 
+            string_eq(top_token(lex).text, to_string("include"))) {
+            append_next_token(lex);
+            string path = lex_string_lit_value(&top_token(lex));
+            if (is_null_str(path)) error_at_string(lex->path, lex->src, top_token(lex).text, "invalid string literal");
+            if (!fs_exists(path)) error_at_string(lex->path, lex->src, top_token(lex).text, "cannot find file");
+
+            fs_file f;
+            fs_get(path, &f);
+            if (!fs_is_regular(&f)) error_at_string(lex->path, lex->src, top_token(lex).text, "file at path is not a regular file");
+
+            string src = string_alloc(f.size);
+
+            bool can_open = fs_open(&f, "rb");
+            if (has_been_included(lex, path) || !can_open) {
+                warning_at_string(lex->path, lex->src, top_token(lex).text, "file already included, skipped");
+                da_pop(&lex->buffer); // destroy 'include'
+                da_pop(&lex->buffer); // destroy path
+            } else {
+                fs_read_entire(&f, src.raw);
+
+                da_append(&lex->included, path);
+
+                lexer f_lex = new_lexer(f.path, src, lex->included);
+
+                // hijack token buffer
+                da_pop(&lex->buffer); // destroy 'include'
+                da_pop(&lex->buffer); // destroy path
+
+                da_destroy(&f_lex.buffer);
+                f_lex.buffer = lex->buffer;
+                construct_token_buffer(&f_lex);
+
+                // patch token buffer back in
+                if (top_token(&f_lex).type == tt_EOF) da_pop(&f_lex.buffer);
+                lex->buffer = f_lex.buffer;
+                lex->included = f_lex.included;
+
+                fs_close(&f);
+            }
+
+            
+            fs_drop(&f);
+        }
+
+    } while (top_token(lex).type != tt_EOF);
 
     da_shrink(&lex->buffer);
 }
@@ -404,4 +465,77 @@ void skip_whitespace(lexer* restrict lex) {
         }
         advance_char(lex);
     }
+}
+
+
+// shitty copy of string_lit_value to work in the lexer
+string lex_string_lit_value(token* restrict tok) {
+    string t = tok->text;
+    string val = NULL_STR;
+    size_t val_len = 0;
+
+    // trace string, figure out how long it needs to be
+    FOR_URANGE(i, 1, t.len-1) {
+        if (t.raw[i] != '\\') {
+            val_len++;
+            continue;
+        }
+        i++;
+        switch (t.raw[i]) {
+        case 'x':
+            i++;
+            i++;
+        case '0':
+        case 'a':
+        case 'b':
+        case 'e':
+        case 'f':
+        case 'n':
+        case 'r':
+        case 't':
+        case 'v':
+        case '\\':
+        case '\"':
+        case '\'':
+            val_len++;
+            break;
+        default:
+            return NULL_STR;
+            break;
+        }
+    }
+
+    // allocate
+    val.raw = malloc(val_len);
+    val.len = val_len;
+
+    // fill in string with correct bytes
+    u64 val_i = 0;
+    FOR_URANGE(i, 1, t.len-1) {
+        if (t.raw[i] != '\\') {
+            val.raw[val_i] = t.raw[i];
+            val_i++;
+            continue;
+        }
+        i++;
+        switch (t.raw[i]) {
+        case '0': val.raw[val_i] = '\0';  break;
+        case 'a': val.raw[val_i] = '\a';  break;
+        case 'b': val.raw[val_i] = '\b';  break;
+        case 'e': val.raw[val_i] = '\e';  break;
+        case 'f': val.raw[val_i] = '\f';  break;
+        case 'n': val.raw[val_i] = '\n';  break;
+        case 'r': val.raw[val_i] = '\r';  break;
+        case 't': val.raw[val_i] = '\t';  break;
+        case 'v': val.raw[val_i] = '\v';  break;
+        case '\\': val.raw[val_i] = '\\'; break;
+        case '\"': val.raw[val_i] = '\"'; break;
+        case '\'': val.raw[val_i] = '\''; break;
+        default:
+            return NULL_STR;
+            break;
+        }
+        val_i++;
+    }
+    return val;
 }
