@@ -62,3 +62,7 @@ typedef struct instr_template {
     u8 func;
     aph_fmt format;
 } instr_template;
+
+#define TEMPLATES_LEN 8
+
+extern const instr_template templates[];

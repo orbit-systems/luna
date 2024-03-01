@@ -1,6 +1,6 @@
 #include "aphelion.h"
 
-instr_template templates[] = {
+const instr_template templates[] = {
     {"int",
         .args   = {arg_val_or_sym},
         .fields = {field_imm},
@@ -30,6 +30,7 @@ instr_template templates[] = {
         .func   = 0x03,
         .format = fmt_F},
     
+
     {"outr",
         .args   = {arg_register, arg_register},
         .fields = {field_rde,    field_rs1},
@@ -59,3 +60,5 @@ instr_template templates[] = {
         .func   = 0x00,
         .format = fmt_M},
 };
+
+static_assert(TEMPLATES_LEN == (sizeof(templates) / sizeof(templates[0])), "TEMPLATES_LEN must be updated to reflect the actual template array length");

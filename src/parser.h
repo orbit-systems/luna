@@ -4,7 +4,8 @@
 #include "orbit.h"
 #include "lexer.h"
 #include "arena.h"
-#include "aphel.h"
+// #include "aphel.h"
+#include "aphelion.h"
 
 #define sign_extend(val, bitsize) ((u64)((i64)((u64)val << (64-bitsize)) >> (64-bitsize)))
 #define zero_extend(val, bitsize) ((u64)((u64)((u64)val << (64-bitsize)) >> (64-bitsize)))
@@ -17,7 +18,8 @@
 typedef struct symbol {
     string name;
     u64 value;
-    bool defined;
+    bool is_defined;
+    bool is_label;
 } symbol;
 
 typedef struct {
@@ -26,66 +28,21 @@ typedef struct {
     size_t cap;
 } symbol_table;
 
-typedef u8 arg_kind; enum {
-    ak_invalid,
-    ak_symbol,
-    ak_register,
-    ak_literal,
-    ak_lit_or_sym,
-    ak_str,
-};
+typedef struct statement {
+        token* start;
+        u8     len;
 
-typedef struct argument {
-    union {
-        symbol*   as_symbol;
-        aphel_reg as_reg;
-        i64       as_literal;
-        string    as_str;
-    };
-    u8 bit_shift_right;
-    arg_kind kind;
-} argument;
-da_typedef(argument);
-
-typedef u8 element_kind; enum {
-    ek_invalid,
-    ek_label,
-    ek_instruction,
-};
-
-typedef struct {
-    struct element ** at;
-    size_t len;
-    size_t cap;
-} element_list;
-
-typedef struct element {
-    struct {
-        u64 start : 56;
-        u64 len   : 8;
-    } loc;
-    union {
-        struct {
-            symbol* symbol;
-        } label;
-        struct {
-            da(argument) args;
-            aphel_inst_code code;
-            u8 special; // some extra metadata
-        } instr;
-        // struct {
-        //     element_list elems;
-        // } substream;
-    };
-    element_kind kind;
-} element;
+        union {
+            symbol* label;
+        } as;
+} statement;
 
 typedef struct luna_file {
     string       path;
     string       text;
     da(token)    tokens;
     symbol_table symtab;
-    element_list elems;
+    // element_list elems;
 
     u64 current_tok;
     symbol* last_nonlocal;
@@ -95,12 +52,12 @@ typedef struct luna_file {
     
 } luna_file;
 
+
+
 void parse_file(luna_file* restrict f);
 void check_definitions(luna_file* restrict f);
 
 i64 parse_regular_literal(luna_file* restrict f);
-
-element* new_element(arena* restrict alloca, element_kind kind);
 
 symbol* symbol_find(luna_file* restrict f, string name);
 symbol* symbol_find_or_create(luna_file* restrict f, string name);
@@ -120,6 +77,3 @@ int ascii_to_digit_val(luna_file* restrict f, char c, u8 base);
 
 #define error_at_elem(f, elem, message, ...) \
     error_at_string(f->path, f->text, f->tokens.at[elem->loc.start].text, message __VA_OPT__(,) __VA_ARGS__)
-
-// assuming the element is of type ek_instruction
-bool check_args(element* restrict e, arg_kind args[], size_t arglen);
