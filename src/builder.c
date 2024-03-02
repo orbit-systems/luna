@@ -254,25 +254,27 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
     case aphel_bgeu: branch_code = 0xD; goto branch_encode;
     case aphel_bgtu: branch_code = 0xE;
         branch_encode:
-        i64 imm;
-        if (e->instr.args.at[0].kind == ak_symbol) {
-            u64 branch_val = e->instr.args.at[0].as_symbol->value >> e->instr.args.at[0].bit_shift_right;
-            if (branch_val % 4 != 0) {
-                error_at_elem(f, e, "branch destination is not aligned to 4 bytes");
+        {
+            i64 imm;
+            if (e->instr.args.at[0].kind == ak_symbol) {
+                u64 branch_val = e->instr.args.at[0].as_symbol->value >> e->instr.args.at[0].bit_shift_right;
+                if (branch_val % 4 != 0) {
+                    error_at_elem(f, e, "branch destination is not aligned to 4 bytes");
+                }
+                imm = (branch_val - position - 4);
+            } else {
+                imm = e->instr.args.at[0].as_literal * 4;
             }
-            imm = (branch_val - position - 4);
-        } else {
-            imm = e->instr.args.at[0].as_literal * 4;
-        }
-        if (!can_losslessly_signext(imm, 20)) {
-            printf("%p", imm);
-            error_at_elem(f, e, "branch is out of range");
-        }
+            if (!can_losslessly_signext(imm, 20)) {
+                printf("%p", imm);
+                error_at_elem(f, e, "branch is out of range");
+            }
 
-        return (aphel_instruction){
-            .B.opcode = 0x0a,
-            .B.func = branch_code,
-            .B.imm = imm / 4};
+            return (aphel_instruction){
+                .B.opcode = 0x0a,
+                .B.func = branch_code,
+                .B.imm = imm / 4};
+        }
     case aphel_push: return (aphel_instruction){
         .M.opcode = 0x0b,
         .M.rs1 = e->instr.args.at[0].as_reg};

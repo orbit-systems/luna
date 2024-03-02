@@ -5,13 +5,13 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdalign.h>
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdarg.h>
 #include <sys/time.h>
 #include <stdatomic.h>
-#include <stdalign.h>
 #include <assert.h>
 
 typedef uint64_t u64;
@@ -25,9 +25,13 @@ typedef int8_t   i8;
 
 typedef double f64;
 typedef float f32;
-typedef _Float16 f16;
 
-#define null NULL
+#ifdef FLT16_MAX
+typedef _Float16 f16;
+#else
+#warning "Float16 ops not supported on this target. Comet will not be compliant! Tell kayla to write a soft-float16."
+typedef float f16;
+#endif
 
 // #if defined(__clang__)
 //     typedef __fp16 f16;
@@ -61,10 +65,6 @@ typedef _Float16 f16;
 
 #define CRASH(msg) do { \
     printf("\x1b[31m\x1b[1mCRASH\x1b[0m: \"%s\" at %s:%d\n", (msg), (__FILE__), (__LINE__)); \
-    exit(EXIT_FAILURE); } while (0)
-
-#define UNREACHABLE(msg) do { \
-    printf("\x1b[31m\x1b[1mUNREACHABLE\x1b[0m: \"%s\" at %s:%d\n", (msg), (__FILE__), (__LINE__)); \
     exit(EXIT_FAILURE); } while (0)
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -306,7 +306,7 @@ void printstr(string str) {
 // god this thing is a mess but it works ig
 
 #ifdef _WIN32
-#   define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #endif
 
 #include <stdlib.h>
@@ -315,29 +315,25 @@ void printstr(string str) {
 #include <stdio.h>
 #include <sys/stat.h>
 #ifdef _WIN32
-#   define VC_EXTRALEAN
-#   define WIN32_LEAN_AND_MEAN
-#   include <windows.h>
-#   include <direct.h>
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <direct.h>
 
-#   define __S_ISTYPE(mode, mask)  (((mode) & S_IFMT) == (mask))
-#   undef S_ISREG
-#   undef S_ISDIR
-#   define S_ISREG(mode)    __S_ISTYPE((mode), S_IFREG)
-#   define S_ISDIR(mode)    __S_ISTYPE((mode), S_IFDIR)
+#define __S_ISTYPE(mode, mask)  (((mode) & S_IFMT) == (mask))
+#undef S_ISREG
+#undef S_ISDIR
+#define S_ISREG(mode)    __S_ISTYPE((mode), S_IFREG)
+#define S_ISDIR(mode)    __S_ISTYPE((mode), S_IFDIR)
 
-#   define fs_mkdir _mkdir
-#   define chdir _chdir
-#   define PATH_MAX 260
+#define fs_mkdir _mkdir
+#define chdir _chdir
+#define PATH_MAX 260
 #else
-#   include <dirent.h>
-#   include <unistd.h>
+#include <dirent.h>
+#include <unistd.h>
 
-#   define fs_mkdir mkdir
-#endif
-
-#ifndef PATH_MAX
-#   define PATH_MAX 260
+#define fs_mkdir mkdir
 #endif
 
 typedef u8 fs_file_type; enum {
