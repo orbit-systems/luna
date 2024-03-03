@@ -9,7 +9,6 @@
 #include "luna.h"
 #include "lexer.h"
 #include "parser.h"
-#include "builder.h"
 
 flag_set luna_flags;
 

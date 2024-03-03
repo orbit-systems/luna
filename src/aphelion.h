@@ -50,6 +50,12 @@ typedef u8 arg_type; enum {
     arg_register,
 };
 
+typedef u8 special_handling; enum {
+    special_branch,
+    special_jumplink,
+    special_imm8,
+};
+
 typedef struct instr_template {
     string name;
 
@@ -58,11 +64,31 @@ typedef struct instr_template {
     u8 count;
 
     u8 opcode;
+    u8 func : 4;
+    aph_fmt format : 4;
 
-    u8 func;
-    aph_fmt format;
+    u8 special_handling;
 } instr_template;
 
 #define TEMPLATES_LEN 8
 
-extern const instr_template templates[];
+extern instr_template templates[];
+
+// map multiple templates to a single name
+// selects templates based on argument count/types
+typedef struct template_group {
+    string name;
+    instr_template** matches;
+    u64 count;
+} template_group;
+
+extern template_group templ_groups[];
+
+
+// macros that get special handling by the luna core. 
+// These macros cant be reduced to other functionality
+// things like call and li.
+typedef struct macro_template {
+    string name;
+
+} macro_template;

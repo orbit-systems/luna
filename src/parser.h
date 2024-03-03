@@ -18,8 +18,8 @@
 typedef struct symbol {
     string name;
     u64 value;
-    bool is_defined;
-    bool is_label;
+    bool is_defined : 1;
+    bool is_label : 1;
 } symbol;
 
 typedef struct {
@@ -28,12 +28,35 @@ typedef struct {
     size_t cap;
 } symbol_table;
 
+typedef u8 statement_type; enum {
+    stmt_label,
+    stmt_define,
+    stmt_instruction,
+    stmt_macro,
+    stmt_substream,
+};
+
 typedef struct statement {
         token* start;
         u8     len;
 
+        statement_type type;
+
         union {
             symbol* label;
+            
+            struct {
+                instr_template* templ; // what instruction even IS this, man?
+
+            } instruction;
+            
+            struct {
+
+            } macro;
+            
+            struct {
+
+            } substream;
         } as;
 } statement;
 

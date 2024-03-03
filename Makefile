@@ -15,7 +15,7 @@ endif
 DEBUGFLAGS = -g -rdynamic -pg
 ASANFLAGS = -fsanitize=undefined -fsanitize=address
 DONTBEAFUCKINGIDIOT = -Werror -Wall -Wextra -pedantic -Wno-missing-field-initializers -Wno-unused-result
-CFLAGS = -O3
+CFLAGS = -O3 -flto
 SHUTTHEFUCKUP = -Wno-unknown-warning-option -Wno-incompatible-pointer-types-discards-qualifiers -Wno-initializer-overrides -Wno-discarded-qualifiers
 
 #MD adds a dependency file, .d to the directory. the line at the bottom
@@ -31,7 +31,7 @@ build/%.o: src/%.c
 
 build: $(OBJECTS)
 	@echo linking with $(LD)
-	@$(CC) $(OBJECTS) -o $(EXECUTABLE_NAME) -lm
+	@$(CC) $(OBJECTS) -o $(EXECUTABLE_NAME) -lm -flto
 	@echo $(EXECUTABLE_NAME) built
 	
 clean:
