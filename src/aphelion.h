@@ -93,5 +93,4 @@ typedef struct macro_template {
     string name;
     arg_type* args;
     u8 count;
-    u16 max_size; // for size estimation
 } macro_template;

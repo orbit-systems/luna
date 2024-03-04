@@ -1,0 +1,6 @@
+lex
+parse
+symbol estimation (upper bound)
+macro expansion
+symbol trace
+build binary
