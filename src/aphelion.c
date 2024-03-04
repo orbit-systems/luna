@@ -74,3 +74,5 @@ template_group templ_groups[] = {
         .matches = (instr_template*[]){&templates[6], &templates[7]},
         .count   = 2 },
 };
+
+static_assert(TEMPL_GROUPS_LEN == (sizeof(templ_groups) / sizeof(templ_groups[0])), "TEMPL_GROUPS_LEN must be updated to reflect the actual template array length");

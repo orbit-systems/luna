@@ -82,13 +82,16 @@ typedef struct template_group {
     u64 count;
 } template_group;
 
-extern template_group templ_groups[];
+#define TEMPL_GROUPS_LEN 2
 
+extern template_group templ_groups[];
 
 // macros that get special handling by the luna core. 
 // These macros cant be reduced to other functionality
 // things like call and li.
 typedef struct macro_template {
     string name;
-
+    arg_type* args;
+    u8 count;
+    u16 max_size; // for size estimation
 } macro_template;

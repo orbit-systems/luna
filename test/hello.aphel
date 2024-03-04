@@ -37,7 +37,12 @@ start:
 
 setup_failed:
     li   ra, setup_failed_text
-    call rb, print_cstring
+
+
+    call print_cstring
+
+    jal ip, offset(print_cstring)
+
     .spin:
         bra .spin
 

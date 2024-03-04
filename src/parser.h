@@ -30,7 +30,7 @@ typedef struct {
 
 typedef u8 statement_type; enum {
     stmt_label,
-    stmt_define,
+    stmt_directive,
     stmt_instruction,
     stmt_macro,
     stmt_substream,
