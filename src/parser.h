@@ -63,6 +63,12 @@ typedef struct statement {
 typedef struct luna_file {
     string       path;
     string       text;
+} luna_file;
+
+da_typedef(luna_file);
+
+typedef struct unit {
+    da(luna_file) files;
     da(token)    tokens;
     symbol_table symtab;
     // element_list elems;
@@ -73,30 +79,23 @@ typedef struct luna_file {
     arena str_alloca;
     arena elem_alloca;
     
-} luna_file;
+} unit;
 
 
 
-void parse_file(luna_file* restrict f);
-void check_definitions(luna_file* restrict f);
+void parse_file(unit* restrict f);
+void check_definitions(unit* restrict f);
 
-i64 parse_regular_literal(luna_file* restrict f);
+i64 parse_regular_literal(unit* restrict f);
 
-symbol* symbol_find(luna_file* restrict f, string name);
-symbol* symbol_find_or_create(luna_file* restrict f, string name);
+symbol* symbol_find(unit* restrict f, string name);
+symbol* symbol_find_or_create(unit* restrict f, string name);
 void expand_local_sym(string* restrict sym, symbol* restrict last_nonlocal, arena* restrict alloca);
 
-string string_lit_value(luna_file* restrict f);
-i64 int_lit_value(luna_file* restrict f);
-f64 float_lit_value(luna_file* restrict f);
-i64 char_lit_value(luna_file* restrict f);
-int ascii_to_digit_val(luna_file* restrict f, char c, u8 base);
-
-#define error_at_token(p, token, message, ...) \
-    error_at_string((p)->path, (p)->text, (token).text, \
-    message __VA_OPT__(,) __VA_ARGS__)
+string string_lit_value(unit* restrict f);
+i64 int_lit_value(unit* restrict f);
+f64 float_lit_value(unit* restrict f);
+i64 char_lit_value(unit* restrict f);
+int ascii_to_digit_val(unit* restrict f, char c, u8 base);
 
 #define str_from_tokens(start, end) ((string){(start).text.raw, (end).text.raw - (start).text.raw + (end).text.len})
-
-#define error_at_elem(f, elem, message, ...) \
-    error_at_string(f->path, f->text, f->tokens.at[elem->loc.start].text, message __VA_OPT__(,) __VA_ARGS__)

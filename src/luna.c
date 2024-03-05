@@ -35,12 +35,11 @@ int main(int argc, char** argv) {
     lexer input_lexer = new_lexer(luna_flags.input_path, input_text, (da(string)){0});
     construct_token_buffer(&input_lexer);
 
-    luna_file source = {0};
+    unit source = {0};
     source.text = input_lexer.src;
     source.path = input_lexer.path;
     source.tokens = input_lexer.buffer;
     da_init(&source.symtab, 16);
-    da_init(&source.elems, 16);
     source.elem_alloca = arena_make(0x4000);
     source.str_alloca  = arena_make(0x1000);
 

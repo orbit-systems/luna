@@ -1,6 +1,6 @@
 lex
 parse
-symbol estimation (upper bound)
+symbol/range estimation (for efficient macro expansion)
 macro expansion
 symbol trace
 build binary
