@@ -5,9 +5,12 @@
 #define peek_token(n) (f->tokens.at[f->current_tok+(n)])
 #define advance_token f->current_tok++
 #define advance_token_n(n) f->current_tok += (n)
-#define error_at_token(p, token, message, ...) \
-    error_at_string((p)->path, (p)->text, (token).text, \
-    message __VA_OPT__(,) __VA_ARGS__)
+#define error_at_token(f, token, message, ...) do { \
+    file* this_file = find_file_from_slice(&f->files, (token).text);\
+    if (this_file == NULL) CRASH("well fuck"); \
+    error_at_string(this_file->path, this_file->src, (token).text, message __VA_OPT__(,) __VA_ARGS__); \
+} while (0)
+
 
 #define str_from_tokens(start, end) ((string){(start).text.raw, (end).text.raw - (start).text.raw + (end).text.len})
 

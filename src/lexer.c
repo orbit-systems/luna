@@ -37,7 +37,14 @@ char* token_type_str[] = {
 #undef TOKEN
 };
 
-lexer new_lexer(string path, string src, da(string) incl) {
+file* find_file_from_slice(da(file)* restrict files, string slice) {
+    FOR_URANGE(i, 0, files->len) {
+        if (is_within(files->at[i].src, slice)) return &files->at[i];
+    }
+    return NULL;
+}
+
+lexer new_lexer(string path, string src, da(file) incl) {
     lexer lex = {0};
     lex.path = path;
     lex.src = src;
@@ -47,14 +54,14 @@ lexer new_lexer(string path, string src, da(string) incl) {
     if (incl.at == NULL) {
         da_init(&lex.included, 1);
     }
-    da_append(&lex.included, path);
+    da_append(&lex.included, ((file){path, src}));
     da_init(&lex.buffer, src.len/3.5);
     return lex;
 }
 
 bool has_been_included(lexer* restrict lex, string path) {
     FOR_URANGE(i, 0, lex->included.len) {
-        if (string_eq(lex->included.at[i], path)) return true;
+        if (string_eq(lex->included.at[i].path, path)) return true;
     }
     return false;
 }
@@ -88,7 +95,7 @@ void construct_token_buffer(lexer* restrict lex) {
             } else {
                 fs_read_entire(&f, src.raw);
 
-                da_append(&lex->included, path);
+                // da_append(&lex->included, ((file){f.path, src}));
 
                 lexer f_lex = new_lexer(f.path, src, lex->included);
 
@@ -109,7 +116,7 @@ void construct_token_buffer(lexer* restrict lex) {
             }
 
             
-            fs_drop(&f);
+            // fs_drop(&f);
         }
 
     } while (top_token(lex).type != tt_EOF);

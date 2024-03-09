@@ -112,8 +112,14 @@ typedef struct token_s {
     token_type type;
 } token;
 
+typedef struct file {
+    string path;
+    string src;
+} file;
+
 da_typedef(token);
 da_typedef(string);
+da_typedef(file);
 
 typedef struct lexer_s {
     string src;
@@ -121,9 +127,11 @@ typedef struct lexer_s {
     da(token) buffer;
     u64 cursor;
     char current_char;
-    da(string) included;
+    da(file) included;
 } lexer;
 
-lexer new_lexer(string path, string src, da(string) incl);
+file* find_file_from_slice(da(file)* restrict files, string slice);
+
+lexer new_lexer(string path, string src, da(file) incl);
 void construct_token_buffer(lexer* lex);
 void append_next_token(lexer* lex);

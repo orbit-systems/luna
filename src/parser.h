@@ -81,8 +81,7 @@ typedef struct element {
 } element;
 
 typedef struct luna_file {
-    string       path;
-    string       text;
+    da(file)     files;
     da(token)    tokens;
     symbol_table symtab;
     element_list elems;
@@ -112,14 +111,14 @@ f64 float_lit_value(luna_file* restrict f);
 i64 char_lit_value(luna_file* restrict f);
 int ascii_to_digit_val(luna_file* restrict f, char c, u8 base);
 
-#define error_at_token(p, token, message, ...) \
-    error_at_string((p)->path, (p)->text, (token).text, \
-    message __VA_OPT__(,) __VA_ARGS__)
-
 #define str_from_tokens(start, end) ((string){(start).text.raw, (end).text.raw - (start).text.raw + (end).text.len})
 
-#define error_at_elem(f, elem, message, ...) \
-    error_at_string(f->path, f->text, f->tokens.at[elem->loc.start].text, message __VA_OPT__(,) __VA_ARGS__)
+#define error_at_elem(f, elem, message, ...) do { \
+    file* this_file = find_file_from_slice(&f->files, f->tokens.at[elem->loc.start].text);\
+    if (this_file == NULL) CRASH("well fuck"); \
+    error_at_string(this_file->path, this_file->src, f->tokens.at[elem->loc.start].text, message __VA_OPT__(,) __VA_ARGS__); \
+} while (0)
+    
 
 // assuming the element is of type ek_instruction
 bool check_args(element* restrict e, arg_kind args[], size_t arglen);

@@ -111,8 +111,10 @@ void warning_at_string(string path, string text, string pos, char* message, ...)
     int line_len = 0;
     line_and_col(text, pos.raw-text.raw, &line_ptr, &line_len, &line, &column);
 
+    printf(STYLE_Italic STYLE_Bold);
     printstr(path);
     printf(" @ %d:%d ", line, column);
+    printf(STYLE_Reset);
 
     printf(STYLE_Dim "-> " STYLE_Reset);
 
