@@ -69,13 +69,32 @@ u64 trace_size(luna_file* restrict f) {
     return size;
 }
 
-u64 value(argument* restrict a) {
+u64 pure value(argument* restrict a) {
     if (a->kind == ak_literal) {
         return a->as_literal;
     } else if (a->kind == ak_symbol) {
         return a->as_symbol->value >> a->bit_shift_right;
     } else 
-        general_error("something very bad has happened internally");
+        general_error("crash: something very bad has happened internally");
+}
+
+// lmao
+static forceinline void error_if_cant_sext(luna_file* restrict f, element* restrict e, i64 value, u8 bitwidth) {
+    if (!can_losslessly_signext(value, bitwidth)) {
+        warning_at_elem(f, e, "%lld is outside representable range [%lld, %lld]", value, sign_extend(1ull<<(bitwidth-1), bitwidth), (1ull<<(bitwidth-1))-1);
+    }
+}
+
+static forceinline void error_if_cant_zext(luna_file* restrict f, element* restrict e, i64 value, u8 bitwidth) {
+    if (!can_losslessly_zeroext(value, bitwidth)) {
+        warning_at_elem(f, e, "%llu is outside representable range [0, %llu]", value, (1ull<<(bitwidth))-1);
+    }
+}
+
+static forceinline void error_if_cant_sext_or_zext(luna_file* restrict f, element* restrict e, i64 value, u8 bitwidth) {
+    if (!can_losslessly_zeroext(value, bitwidth) && !can_losslessly_signext(value, bitwidth)) {
+        warning_at_elem(f, e, "%lld is outside representable ranges [%lld, %llu] ", value, sign_extend(1ull<<(bitwidth-1), bitwidth), (1ull<<(bitwidth))-1);
+    }
 }
 
 void emit_binary(luna_file* restrict f, void* bin) {
@@ -91,6 +110,8 @@ void emit_binary(luna_file* restrict f, void* bin) {
                 val = f->elems.at[i]->instr.args.at[0].as_symbol->value;
             else
                 val = f->elems.at[i]->instr.args.at[0].as_literal;
+
+            error_if_cant_sext_or_zext(f, f->elems.at[i], val, 8);
 
             if (f->elems.at[i]->instr.args.len == 2) {
                 u64 len = f->elems.at[i]->instr.args.at[1].as_literal;
@@ -110,6 +131,7 @@ void emit_binary(luna_file* restrict f, void* bin) {
             else
                 val = f->elems.at[i]->instr.args.at[0].as_literal;
 
+            error_if_cant_sext_or_zext(f, f->elems.at[i], val, 16);
             if (f->elems.at[i]->instr.args.len == 2) {
                 u64 len = f->elems.at[i]->instr.args.at[1].as_literal;
                 FOR_URANGE(i, 0, len) {
@@ -128,6 +150,7 @@ void emit_binary(luna_file* restrict f, void* bin) {
             else
                 val = f->elems.at[i]->instr.args.at[0].as_literal;
 
+            error_if_cant_sext_or_zext(f, f->elems.at[i], val, 32);
             if (f->elems.at[i]->instr.args.len == 2) {
                 u64 len = f->elems.at[i]->instr.args.at[1].as_literal;
                 FOR_URANGE(i, 0, len) {
@@ -146,6 +169,7 @@ void emit_binary(luna_file* restrict f, void* bin) {
             else
                 val = f->elems.at[i]->instr.args.at[0].as_literal;
 
+            error_if_cant_sext_or_zext(f, f->elems.at[i], val, 64);
             if (f->elems.at[i]->instr.args.len == 2) {
                 u64 len = f->elems.at[i]->instr.args.at[1].as_literal;
                 FOR_URANGE(i, 0, len) {
@@ -180,7 +204,7 @@ void emit_binary(luna_file* restrict f, void* bin) {
             } break;
         default:
             *(aphel_instruction*)(cursor + (u64)bin) = encode_instruction(f, f->elems.at[i], cursor);
-            if (encode_instruction(f, f->elems.at[i], cursor).opcode == 0) {
+            if (((aphel_instruction*)(cursor + (u64)bin))->opcode == 0) {
                 error_at_elem(f, f->elems.at[i], "huh? %d/%d", i, f->elems.len);
             }
             cursor += 4;
@@ -200,7 +224,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
     u8 sh = 0;
 
     switch (e->instr.code) {
-    case aphel_int: return (aphel_instruction){
+    case aphel_int: error_if_cant_zext(f, e, value(&e->instr.args.at[0]), 8);
+        return (aphel_instruction){
         .F.opcode = 0x01, .F.func = 0x00,
         .F.imm    = value(&e->instr.args.at[0])};
     case aphel_iret: return (aphel_instruction){
@@ -214,7 +239,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .M.opcode = 0x02,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg};
-    case aphel_outi: return (aphel_instruction){
+    case aphel_outi: error_if_cant_zext(f, e, value(&e->instr.args.at[0]), 16); 
+        return (aphel_instruction){
         .M.opcode = 0x03,
         .M.imm = value(&e->instr.args.at[0]),
         .M.rs1 = e->instr.args.at[1].as_reg};
@@ -222,15 +248,18 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .M.opcode = 0x04,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg};
-    case aphel_ini: return (aphel_instruction){
+    case aphel_ini: error_if_cant_zext(f, e, value(&e->instr.args.at[1]), 16); 
+        return (aphel_instruction){
         .M.opcode = 0x05,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.imm = value(&e->instr.args.at[1])};
-    case aphel_jal: return (aphel_instruction){
+    case aphel_jal: error_if_cant_sext(f, e, value(&e->instr.args.at[1]), 16); 
+        return (aphel_instruction){
         .M.opcode = 0x06,
         .M.rs1 = e->instr.args.at[0].as_reg,
         .M.imm = value(&e->instr.args.at[1])};
-    case aphel_jalr: return (aphel_instruction){
+    case aphel_jalr: error_if_cant_sext(f, e, value(&e->instr.args.at[1]), 16); 
+        return (aphel_instruction){
         .M.opcode = 0x07,
         .M.rs1 = e->instr.args.at[0].as_reg,
         .M.imm = value(&e->instr.args.at[1]),
@@ -266,7 +295,6 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
                 imm = e->instr.args.at[0].as_literal * 4;
             }
             if (!can_losslessly_signext(imm, 20)) {
-                printf("%p", imm);
                 error_at_elem(f, e, "branch is out of range");
             }
 
@@ -293,8 +321,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
     case aphel_ltis:  li_code = 5; goto li_encode;
     case aphel_ltui:  li_code = 6; goto li_encode;
     case aphel_ltuis: li_code = 7;
-        li_encode: 
-        
+        li_encode:
+        error_if_cant_zext(f, e, value(&e->instr.args.at[1]), 16);
         return (aphel_instruction){
             .F.opcode = 0x10,
             .F.rde = e->instr.args.at[0].as_reg,
@@ -307,15 +335,16 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
     case aphel_lqs: li_code = 0x15; goto loadmem_encode;
     case aphel_lb:  li_code = 0x16; goto loadmem_encode;
     case aphel_lbs: li_code = 0x17;
-
         loadmem_encode:
         switch (e->instr.args.len) {
         case 5:
             sh = value(&e->instr.args.at[4]);
+            error_if_cant_zext(f, e, sh, 4);
         case 4:
             rn = e->instr.args.at[3].as_reg;
         case 3:
             off = value(&e->instr.args.at[2]);
+            error_if_cant_sext(f, e, off, 8);
         }
         return (aphel_instruction){
             .E.opcode = li_code,
@@ -334,10 +363,12 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         switch (e->instr.args.len) {
         case 5:
             sh = value(&e->instr.args.at[3]);
+            error_if_cant_zext(f, e, sh, 4);
         case 4:
             rn = e->instr.args.at[2].as_reg;
         case 3:
             off = value(&e->instr.args.at[1]);
+            error_if_cant_sext(f, e, off, 8);
         }
         return (aphel_instruction){
             .E.opcode = li_code,
@@ -353,12 +384,14 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .M.rs1 = e->instr.args.at[1].as_reg};
     case aphel_cmpi: 
         if (e->instr.special == special_cmpi_reverse) {
+            error_if_cant_sext(f, e, value(&e->instr.args.at[0]), 16);
             return (aphel_instruction){
                 .F.opcode = 0x1f,
                 .F.rde = e->instr.args.at[1].as_reg,
                 .F.func = 1,
                 .F.imm = value(&e->instr.args.at[0])};
         } else {
+            error_if_cant_sext(f, e, value(&e->instr.args.at[1]), 16);
             return (aphel_instruction){
                 .F.opcode = 0x1f,
                 .F.rde = e->instr.args.at[0].as_reg,
@@ -370,7 +403,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_addi: return (aphel_instruction){
+    case aphel_addi: error_if_cant_sext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x21,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -380,7 +414,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_subi: return (aphel_instruction){
+    case aphel_subi: error_if_cant_sext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x23,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -390,7 +425,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_imuli: return (aphel_instruction){
+    case aphel_imuli: error_if_cant_sext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x25,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -400,7 +436,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_idivi: return (aphel_instruction){
+    case aphel_idivi: error_if_cant_sext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x27,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -410,7 +447,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_umuli: return (aphel_instruction){
+    case aphel_umuli: error_if_cant_zext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x29,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -420,7 +458,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_udivi: return (aphel_instruction){
+    case aphel_udivi: error_if_cant_zext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x2b,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -430,7 +469,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_remi: return (aphel_instruction){
+    case aphel_remi: error_if_cant_sext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x2d,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -440,7 +480,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_modi: return (aphel_instruction){
+    case aphel_modi: error_if_cant_sext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x2f,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -451,7 +492,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_andi: return (aphel_instruction){
+    case aphel_andi: error_if_cant_zext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x31,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -461,7 +503,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_ori: return (aphel_instruction){
+    case aphel_ori: error_if_cant_zext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x33,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -471,7 +514,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_nori: return (aphel_instruction){
+    case aphel_nori: error_if_cant_zext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x35,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -481,7 +525,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_xori: return (aphel_instruction){
+    case aphel_xori: error_if_cant_zext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x37,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -491,7 +536,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_shli: return (aphel_instruction){
+    case aphel_shli: error_if_cant_zext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x39,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -501,7 +547,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_asri: return (aphel_instruction){
+    case aphel_asri: error_if_cant_zext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x3b,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -511,7 +558,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_lsri: return (aphel_instruction){
+    case aphel_lsri: error_if_cant_zext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x3d,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,
@@ -521,7 +569,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
         .R.rde = e->instr.args.at[0].as_reg,
         .R.rs1 = e->instr.args.at[1].as_reg,
         .R.rs2 = e->instr.args.at[2].as_reg};
-    case aphel_biti: return (aphel_instruction){
+    case aphel_biti: error_if_cant_zext(f, e, value(&e->instr.args.at[2]), 16);
+        return (aphel_instruction){
         .M.opcode = 0x3f,
         .M.rde = e->instr.args.at[0].as_reg,
         .M.rs1 = e->instr.args.at[1].as_reg,

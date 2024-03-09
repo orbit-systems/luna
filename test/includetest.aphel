@@ -1,5 +1,5 @@
 d64 1
 
-include "test/includetest2.aphel"
+define BRUH, 0xFFFF
 
-d64 10
+include "test/includetest2.aphel"

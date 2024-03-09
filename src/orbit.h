@@ -54,6 +54,10 @@ typedef _Float16 f16;
 #   define forceinline inline
 #endif
 
+#define pure __attribute__((pure))
+
+
+
 #define TODO(msg) do {\
     printf("\x1b[36m\x1b[1mTODO\x1b[0m: \"%s\" at %s:%d\n", (msg), (__FILE__), (__LINE__)); \
     exit(EXIT_FAILURE); } while (0)

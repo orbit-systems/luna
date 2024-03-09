@@ -119,6 +119,11 @@ int ascii_to_digit_val(luna_file* restrict f, char c, u8 base);
     error_at_string(this_file->path, this_file->src, f->tokens.at[elem->loc.start].text, message __VA_OPT__(,) __VA_ARGS__); \
 } while (0)
     
+#define warning_at_elem(f, elem, message, ...) do { \
+    file* this_file = find_file_from_slice(&f->files, f->tokens.at[elem->loc.start].text);\
+    if (this_file == NULL) CRASH("well fuck"); \
+    warning_at_string(this_file->path, this_file->src, f->tokens.at[elem->loc.start].text, message __VA_OPT__(,) __VA_ARGS__); \
+} while (0)
 
 // assuming the element is of type ek_instruction
 bool check_args(element* restrict e, arg_kind args[], size_t arglen);
