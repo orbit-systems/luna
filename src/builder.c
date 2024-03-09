@@ -1,6 +1,7 @@
 #include "builder.h"
 #include "term.h"
 #include "arena.h"
+#include "parser.h"
 
 u64 trace_size(luna_file* restrict f) {
     u64 size = 0;
@@ -53,6 +54,24 @@ u64 trace_size(luna_file* restrict f) {
             case aphel_utf8:
                 cursor += f->elems.at[i]->instr.args.at[0].as_str.len;
                 break;
+            case aphel_embed:
+                string path = f->elems.at[i]->instr.args.at[0].as_str;
+                
+                if (!fs_exists(path)) {
+                    error_at_elem(f, f->elems.at[i], "cannot find '"str_fmt"'", str_arg(path));
+                }
+
+                fs_file embed_file;
+                fs_get(path, &embed_file);
+                fs_open(&embed_file, "rb");
+                f->elems.at[i]->embed.bin = string_alloc(embed_file.size);
+                fs_read_entire(&embed_file, f->elems.at[i]->embed.bin.raw);
+                fs_close(&embed_file);
+                fs_drop(&embed_file);
+
+                f->elems.at[i]->kind = ek_embed;
+                cursor += f->elems.at[i]->embed.bin.len;
+                break;
             default:
                 if (cursor % 4 != 0)
                     error_at_elem(f, f->elems.at[i], "instructions must be aligned to 4 bytes (use 'align 4' before)");
@@ -101,6 +120,11 @@ void emit_binary(luna_file* restrict f, void* bin) {
 
     u64 cursor = 0;
     FOR_URANGE(i, 0, f->elems.len) {
+        if (f->elems.at[i]->kind == ek_embed) {
+            memcpy(((u8*)(cursor + (u64)bin)), f->elems.at[i]->embed.bin.raw, f->elems.at[i]->embed.bin.len);
+            cursor += f->elems.at[i]->embed.bin.len;
+            continue;
+        }
         if (f->elems.at[i]->kind != ek_instruction) continue;
         // printf(" - %d\n", f->elems.at[i]->instr.code);
         switch (f->elems.at[i]->instr.code) {
@@ -205,7 +229,7 @@ void emit_binary(luna_file* restrict f, void* bin) {
         default:
             *(aphel_instruction*)(cursor + (u64)bin) = encode_instruction(f, f->elems.at[i], cursor);
             if (((aphel_instruction*)(cursor + (u64)bin))->opcode == 0) {
-                error_at_elem(f, f->elems.at[i], "huh? %d/%d", i, f->elems.len);
+                error_at_elem(f, f->elems.at[i], "huh? %d / %d", i, f->elems.len-1);
             }
             cursor += 4;
             break;

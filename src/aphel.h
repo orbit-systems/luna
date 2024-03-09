@@ -235,6 +235,7 @@ typedef u8 imm_strategy; enum {
     INSTR(d32,   "d32",   0x00, 0, 0) \
     INSTR(d64,   "d64",   0x00, 0, 0) \
     INSTR(utf8,  "utf8",  0x00, 0, 0) \
+    INSTR(embed, "embed", 0x00, 0, 0) \
 \
     INSTR(PSUEDO_MAX, "",  0x00, 0, 0) \
 

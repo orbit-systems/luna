@@ -51,6 +51,7 @@ typedef u8 element_kind; enum {
     ek_invalid,
     ek_label,
     ek_instruction,
+    ek_embed,
 };
 
 typedef struct {
@@ -76,6 +77,9 @@ typedef struct element {
         // struct {
         //     element_list elems;
         // } substream;
+        struct {
+            string bin;
+        } embed;
     };
     element_kind kind;
 } element;

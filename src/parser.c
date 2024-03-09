@@ -799,6 +799,10 @@ void parse_file(luna_file* restrict f) {
                 if (!check_args(e, (arg_kind[]){ak_str}, 1))
                     error_at_elem(f, e, "invalid arguments for '"str_fmt"'", str_arg(f->tokens.at[e->loc.start].text));
                 break;
+            case aphel_embed:
+                if (!check_args(e, (arg_kind[]){ak_str}, 1))
+                    error_at_elem(f, e, "invalid arguments for '"str_fmt"'", str_arg(f->tokens.at[e->loc.start].text));
+                break;
             default:
                 error_at_elem(f, e, "what? (shouldnt happen, ask sandwichman about this)");
             }

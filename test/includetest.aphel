@@ -1,5 +1,4 @@
 d64 1
-
 define BRUH, 0xFFFF
 
 include "test/includetest2.aphel"
