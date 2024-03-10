@@ -99,19 +99,19 @@ u64 pure value(argument* restrict a) {
 
 // lmao
 static forceinline void error_if_cant_sext(luna_file* restrict f, element* restrict e, i64 value, u8 bitwidth) {
-    if (!can_losslessly_signext(value, bitwidth)) {
+    if (!can_losslessly_signext(value, bitwidth) && !e->no_warn) {
         warning_at_elem(f, e, "%lld is outside representable range [%lld, %lld]", value, sign_extend(1ull<<(bitwidth-1), bitwidth), (1ull<<(bitwidth-1))-1);
     }
 }
 
 static forceinline void error_if_cant_zext(luna_file* restrict f, element* restrict e, i64 value, u8 bitwidth) {
-    if (!can_losslessly_zeroext(value, bitwidth)) {
+    if (!can_losslessly_zeroext(value, bitwidth) && !e->no_warn) {
         warning_at_elem(f, e, "%llu is outside representable range [0, %llu]", value, (1ull<<(bitwidth))-1);
     }
 }
 
 static forceinline void error_if_cant_sext_or_zext(luna_file* restrict f, element* restrict e, i64 value, u8 bitwidth) {
-    if (!can_losslessly_zeroext(value, bitwidth) && !can_losslessly_signext(value, bitwidth)) {
+    if ((!can_losslessly_zeroext(value, bitwidth) && !can_losslessly_signext(value, bitwidth)) && !e->no_warn) {
         warning_at_elem(f, e, "%lld is outside representable ranges [%lld, %llu] ", value, sign_extend(1ull<<(bitwidth-1), bitwidth), (1ull<<(bitwidth))-1);
     }
 }
@@ -346,7 +346,8 @@ aphel_instruction encode_instruction(luna_file* restrict f, element* restrict e,
     case aphel_ltui:  li_code = 6; goto li_encode;
     case aphel_ltuis: li_code = 7;
         li_encode:
-        error_if_cant_zext(f, e, value(&e->instr.args.at[1]), 16);
+        if (li_code % 2 == 0) error_if_cant_zext(f, e, value(&e->instr.args.at[1]), 16);
+        else error_if_cant_sext(f, e, value(&e->instr.args.at[1]), 16);
         return (aphel_instruction){
             .F.opcode = 0x10,
             .F.rde = e->instr.args.at[0].as_reg,

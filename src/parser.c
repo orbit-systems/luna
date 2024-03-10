@@ -23,10 +23,12 @@ element* generate_li(luna_file* restrict f, element* e) {
         
         e->instr.code = aphel_lli;
         e->instr.args.at[1].bit_shift_right = 0;
+        e->no_warn = true;
         da_append(&f->elems, e);
 
         e = new_element(&f->elem_alloca, ek_instruction);
         e->instr.code = aphel_lui;
+        e->no_warn = true;
         da_init(&e->instr.args, 2);
         da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rd}));
         da_append(&e->instr.args, ((argument){.kind = ak_symbol, .as_symbol = sym, .bit_shift_right = 16}));
@@ -34,6 +36,7 @@ element* generate_li(luna_file* restrict f, element* e) {
 
         e = new_element(&f->elem_alloca, ek_instruction);
         e->instr.code = aphel_lti;
+        e->no_warn = true;
         da_init(&e->instr.args, 2);
         da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rd}));
         da_append(&e->instr.args, ((argument){.kind = ak_symbol, .as_symbol = sym, .bit_shift_right = 32}));
@@ -41,6 +44,7 @@ element* generate_li(luna_file* restrict f, element* e) {
 
         e = new_element(&f->elem_alloca, ek_instruction);
         e->instr.code = aphel_lui;
+        e->no_warn = true;
         da_init(&e->instr.args, 2);
         da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rd}));
         da_append(&e->instr.args, ((argument){.kind = ak_symbol, .as_symbol = sym, .bit_shift_right = 48}));
@@ -53,16 +57,19 @@ element* generate_li(luna_file* restrict f, element* e) {
         } else if (can_losslessly_signext(val, 32)) {
             e->instr.code = aphel_luis;
             e->instr.args.at[1].as_literal = (val >> 16) & 0xFFFF;
+            e->no_warn = true;
             da_append(&f->elems, e);
 
             e = new_element(&f->elem_alloca, ek_instruction);
             e->instr.code = aphel_lli;
+            e->no_warn = true;
             da_init(&e->instr.args, 2);
             da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rd}));
             da_append(&e->instr.args, ((argument){.kind = ak_literal, .as_literal = (val & 0xFFFF)}));
         } else if (can_losslessly_signext(val, 48)) {
             e->instr.code = aphel_ltis;
             e->instr.args.at[1].as_literal = (val >> 32) & 0xFFFF;
+            e->no_warn = true;
             da_append(&f->elems, e);
 
             e = new_element(&f->elem_alloca, ek_instruction);
@@ -74,16 +81,19 @@ element* generate_li(luna_file* restrict f, element* e) {
         
             e = new_element(&f->elem_alloca, ek_instruction);
             e->instr.code = aphel_lli;
+            e->no_warn = true;
             da_init(&e->instr.args, 2);
             da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rd}));
             da_append(&e->instr.args, ((argument){.kind = ak_literal, .as_literal = (val & 0xFFFF)}));
         } else {
             e->instr.code = aphel_ltui;
             e->instr.args.at[1].as_literal = (val >> 48) & 0xFFFF;
+            e->no_warn = true;
             da_append(&f->elems, e);
 
             e = new_element(&f->elem_alloca, ek_instruction);
             e->instr.code = aphel_lti;
+            e->no_warn = true;
             da_init(&e->instr.args, 2);
             da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rd}));
             da_append(&e->instr.args, ((argument){.kind = ak_literal, .as_literal = ((val >> 32) & 0xFFFF)}));
@@ -91,6 +101,7 @@ element* generate_li(luna_file* restrict f, element* e) {
         
             e = new_element(&f->elem_alloca, ek_instruction);
             e->instr.code = aphel_lui;
+            e->no_warn = true;
             da_init(&e->instr.args, 2);
             da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rd}));
             da_append(&e->instr.args, ((argument){.kind = ak_literal, .as_literal = ((val >> 16) & 0xFFFF)}));
@@ -98,6 +109,7 @@ element* generate_li(luna_file* restrict f, element* e) {
 
             e = new_element(&f->elem_alloca, ek_instruction);
             e->instr.code = aphel_lli;
+            e->no_warn = true;
             da_init(&e->instr.args, 2);
             da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rd}));
             da_append(&e->instr.args, ((argument){.kind = ak_literal, .as_literal = (val & 0xFFFF)}));

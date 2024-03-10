@@ -82,6 +82,7 @@ typedef struct element {
         } embed;
     };
     element_kind kind;
+    bool no_warn; // disable out of bounds warnings
 } element;
 
 typedef struct luna_file {
