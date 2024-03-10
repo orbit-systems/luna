@@ -74,8 +74,8 @@ void construct_token_buffer(lexer* restrict lex) {
 
     do {
         append_next_token(lex);
-        if (top_token(lex).type == tt_identifier && 
-            string_eq(top_token(lex).text, to_string("include"))) {
+        bool is_forced = string_eq(top_token(lex).text, to_string("forceinclude"));
+        if (top_token(lex).type == tt_identifier && (string_eq(top_token(lex).text, to_string("include")) || is_forced)) {
             append_next_token(lex);
             string path = lex_string_lit_value(&top_token(lex));
             if (is_null_str(path)) error_at_string(lex->path, lex->src, top_token(lex).text, "invalid string literal");
@@ -88,7 +88,7 @@ void construct_token_buffer(lexer* restrict lex) {
             string src = string_alloc(f.size);
 
             bool can_open = fs_open(&f, "rb");
-            if (has_been_included(lex, path) || !can_open) {
+            if ((has_been_included(lex, path)) && !is_forced) {
                 warning_at_string(lex->path, lex->src, top_token(lex).text, "file already included, skipped");
                 da_pop(&lex->buffer); // destroy 'include'
                 da_pop(&lex->buffer); // destroy path
