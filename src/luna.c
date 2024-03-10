@@ -24,10 +24,11 @@ int main(int argc, char** argv) {
     bool status = true;
     fs_file input;
     status = status && fs_get(luna_flags.input_path, &input);
-    string input_text = string_alloc(input.size);
+    string input_text = string_alloc(input.size + 1);
     status = status && fs_open(&input, "rb");
     status = status && fs_read_entire(&input, input_text.raw);
     status = status && fs_close(&input);
+    input_text.raw[input.size] = '\n';
 
     if (!status) {
         general_error("failed to read file \""str_fmt"\"", str_arg(luna_flags.input_path));
@@ -46,12 +47,15 @@ int main(int argc, char** argv) {
     source.elem_alloca = arena_make(0x4000);
     source.str_alloca  = arena_make(0x1000);
 
+
+
     parse_file(&source);
     check_definitions(&source);
     u64 size = trace_size(&source);
 
     void* bin = malloc(size);
     memset(bin, 0, size);
+
 
     emit_binary(&source, bin);
     
