@@ -221,10 +221,9 @@ void emit_binary(luna_file* restrict f, void* bin) {
             } break;
         case aphel_utf8: {
             u64 len = f->elems.at[i]->instr.args.at[0].as_str.len;
-            FOR_URANGE(j, 0, len) {
-                *((u8*)(cursor + (u64)bin)) = f->elems.at[i]->instr.args.at[0].as_str.raw[j];
-                cursor += 1;
-            }
+            memcpy((u8*)(cursor + (u64)bin), f->elems.at[i]->instr.args.at[0].as_str.raw, len);
+            cursor += len;
+
             } break;
         default:
             *(aphel_instruction*)(cursor + (u64)bin) = encode_instruction(f, f->elems.at[i], cursor);
