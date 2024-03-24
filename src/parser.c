@@ -43,7 +43,7 @@ element* generate_li(luna_file* restrict f, element* e) {
         da_append(&f->elems, e);
 
         e = new_element(&f->elem_alloca, ek_instruction);
-        e->instr.code = aphel_lui;
+        e->instr.code = aphel_ltui;
         e->no_warn = true;
         da_init(&e->instr.args, 2);
         da_append(&e->instr.args, ((argument){.kind = ak_register, .as_reg = rd}));
